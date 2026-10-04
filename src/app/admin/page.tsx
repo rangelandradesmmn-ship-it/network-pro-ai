@@ -58,7 +58,7 @@ export default function PainelAdmin() {
             date: new Date(item.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
             action: item.description,
             admin: 'Sistema',
-            target: item.profiles?.referral_code || '---',
+            target: (item.profiles as any)?.referral_code || '---',
             details: `+${item.amount_miles} Milhas processadas`
           }));
           setAudit(formattedAudit);
