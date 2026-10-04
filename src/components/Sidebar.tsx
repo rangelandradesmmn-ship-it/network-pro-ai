@@ -31,7 +31,6 @@ export default function Sidebar() {
 
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Minha Matriz', path: '/minha-matriz', icon: <Network size={20} /> },
     { name: 'Minhas Matrizes', path: '/matrizes', icon: <Layers size={20} /> },
     { name: 'Minha Rede', path: '/minha-rede', icon: <Share2 size={20} /> },
     { name: 'Minhas Indicações', path: '/minhas-indicacoes', icon: <Users size={20} /> },
