@@ -16,9 +16,18 @@ import {
   LogOut 
 } from 'lucide-react';
 
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/utils/supabase';
+
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
@@ -71,7 +80,10 @@ export default function Sidebar() {
               <span className="font-medium">Configurações</span>
             </div>
           </Link>
-          <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors mt-2">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors mt-2"
+          >
             <span className="flex items-center justify-center opacity-80"><LogOut size={20} /></span>
             <span className="font-medium">Sair</span>
           </button>
