@@ -52,10 +52,12 @@ export default function Sidebar() {
         </nav>
         
         <div className="p-4 border-t border-[#91A4B7]/20">
-          <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-[#91A4B7] hover:bg-[#07111F] hover:text-[#F4F7FA] transition-colors">
-            <span>⚙️</span>
-            <span className="font-medium">Configurações</span>
-          </button>
+          <Link href="/configuracoes">
+            <div className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors ${pathname === '/configuracoes' ? 'bg-[#00AEEF]/10 text-[#00AEEF] border border-[#00AEEF]/20' : 'text-[#91A4B7] hover:bg-[#07111F] hover:text-[#F4F7FA]'}`}>
+              <span>⚙️</span>
+              <span className="font-medium">Configurações</span>
+            </div>
+          </Link>
           <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors mt-2">
             <span>🚪</span>
             <span className="font-medium">Sair</span>
