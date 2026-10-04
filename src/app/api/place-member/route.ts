@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     if (profileError) {
       console.error('Profile Error:', profileError);
-      return NextResponse.json({ error: 'Erro ao criar perfil no banco de dados.' }, { status: 500 });
+      return NextResponse.json({ error: 'Erro de Banco: ' + profileError.message + ' | Details: ' + profileError.details }, { status: 500 });
     }
 
     // 3. Process Placement
