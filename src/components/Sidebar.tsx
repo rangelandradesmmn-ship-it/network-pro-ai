@@ -3,19 +3,32 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { 
+  LayoutDashboard, 
+  Network, 
+  Layers, 
+  Share2, 
+  Users, 
+  Star, 
+  Trophy, 
+  Lock, 
+  Settings, 
+  LogOut 
+} from 'lucide-react';
+
 export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: '📊' },
-    { name: 'Minha Matriz', path: '/minha-matriz', icon: '🎯' },
-    { name: 'Minhas Matrizes', path: '/matrizes', icon: '📁' },
-    { name: 'Minha Rede', path: '/minha-rede', icon: '🌳' },
-    { name: 'Minhas Indicações', path: '/minhas-indicacoes', icon: '👥' },
-    { name: 'Minhas Milhas', path: '/minhas-milhas', icon: '⭐' },
-    { name: 'Ranking', path: '/ranking', icon: '🏆' },
-    { name: 'Painel Admin', path: '/admin', icon: '🔐' },
+    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Minha Matriz', path: '/minha-matriz', icon: <Network size={20} /> },
+    { name: 'Minhas Matrizes', path: '/matrizes', icon: <Layers size={20} /> },
+    { name: 'Minha Rede', path: '/minha-rede', icon: <Share2 size={20} /> },
+    { name: 'Minhas Indicações', path: '/minhas-indicacoes', icon: <Users size={20} /> },
+    { name: 'Minhas Milhas', path: '/minhas-milhas', icon: <Star size={20} /> },
+    { name: 'Ranking', path: '/ranking', icon: <Trophy size={20} /> },
+    { name: 'Painel Admin', path: '/admin', icon: <Lock size={20} /> },
   ];
 
   return (
@@ -44,7 +57,7 @@ export default function Sidebar() {
               onClick={() => setIsOpen(false)}
             >
               <div className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${pathname === item.path ? 'bg-[#00AEEF]/10 text-[#00AEEF] border border-[#00AEEF]/20' : 'text-[#91A4B7] hover:bg-[#07111F] hover:text-[#F4F7FA]'}`}>
-                <span className="text-xl">{item.icon}</span>
+                <span className="flex items-center justify-center opacity-80">{item.icon}</span>
                 <span className="font-medium">{item.name}</span>
               </div>
             </Link>
@@ -54,12 +67,12 @@ export default function Sidebar() {
         <div className="p-4 border-t border-[#91A4B7]/20">
           <Link href="/configuracoes">
             <div className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors ${pathname === '/configuracoes' ? 'bg-[#00AEEF]/10 text-[#00AEEF] border border-[#00AEEF]/20' : 'text-[#91A4B7] hover:bg-[#07111F] hover:text-[#F4F7FA]'}`}>
-              <span>⚙️</span>
+              <span className="flex items-center justify-center opacity-80"><Settings size={20} /></span>
               <span className="font-medium">Configurações</span>
             </div>
           </Link>
           <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors mt-2">
-            <span>🚪</span>
+            <span className="flex items-center justify-center opacity-80"><LogOut size={20} /></span>
             <span className="font-medium">Sair</span>
           </button>
         </div>
