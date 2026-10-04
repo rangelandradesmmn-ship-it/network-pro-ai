@@ -16,9 +16,19 @@ export async function POST(request: Request) {
     }
 
     // 1. Check if rules exist, if not create default
-    const { data: rules } = await supabase.from('matrix_rule_versions').select('id').limit(1);
+    let ruleVersionId = 1;
+    const { data: rules } = await supabase.from('matrix_rule_versions').select('id').order('id', { ascending: true }).limit(1);
+    
     if (!rules || rules.length === 0) {
-      await supabase.from('matrix_rule_versions').insert([{ capacity: 155, level_1_points: 20, level_2_points: 10, level_3_points: 20 }]);
+      const { data: newRule, error: ruleErr } = await supabase.from('matrix_rule_versions')
+        .insert([{ capacity: 155, level_1_points: 20, level_2_points: 10, level_3_points: 20 }])
+        .select('id')
+        .single();
+      if (!ruleErr && newRule) {
+        ruleVersionId = newRule.id;
+      }
+    } else {
+      ruleVersionId = rules[0].id;
     }
 
     // 2. Create Profile
@@ -34,7 +44,7 @@ export async function POST(request: Request) {
 
     if (profileError) {
       console.error('Profile Error:', profileError);
-      return NextResponse.json({ error: 'Erro de Banco: ' + profileError.message + ' | Details: ' + profileError.details }, { status: 500 });
+      return NextResponse.json({ error: 'Erro de Banco (Profiles): ' + profileError.message }, { status: 500 });
     }
 
     // 3. Process Placement
@@ -43,10 +53,12 @@ export async function POST(request: Request) {
          owner_user_id: newUserId, 
          matrix_number: 1, 
          capacity: 155, 
-         rule_version_id: 1 
+         rule_version_id: ruleVersionId 
        }]);
        
-       if (matrixError) throw matrixError;
+       if (matrixError) {
+         return NextResponse.json({ error: 'Erro de Banco (Matrices): ' + matrixError.message }, { status: 500 });
+       }
 
        return NextResponse.json({
          success: true,
