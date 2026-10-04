@@ -22,43 +22,40 @@ export default function MinhasIndicacoes() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Fetch user's direct referrals
-        const { data: directReferrals } = await supabase
-          .from('profiles')
-          .select('id, name, created_at, status, referral_code')
-          .eq('sponsor_id', user.id)
-          .order('created_at', { ascending: false });
+        // Fetch user's direct referrals from matrix_positions (more reliable)
+        const { data: positions } = await supabase
+          .from('matrix_positions')
+          .select('user_id, matrix_id, level, position_index')
+          .eq('sponsor_id', user.id);
 
-        if (!directReferrals || directReferrals.length === 0) {
+        if (!positions || positions.length === 0) {
           setReferrals([]);
           return;
         }
 
-        const referralIds = directReferrals.map(r => r.id);
+        const userIds = positions.map(p => p.user_id);
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, name, created_at, status, referral_code')
+          .in('id', userIds);
 
-        // Fetch their matrix positions
-        const { data: positions } = await supabase
-          .from('matrix_positions')
-          .select('user_id, matrix_id, level, position_index')
-          .in('user_id', referralIds);
-
-        const posMap: Record<string, any> = {};
-        if (positions) {
-          positions.forEach(p => {
-            posMap[p.user_id] = p;
+        const profileMap: Record<string, any> = {};
+        if (profilesData) {
+          profilesData.forEach(p => {
+            profileMap[p.id] = p;
           });
         }
 
-        const formatted = directReferrals.map((ref: any) => {
-          const pos = posMap[ref.id];
+        const formatted = positions.map((pos: any) => {
+          const ref = profileMap[pos.user_id];
           return {
-            id: ref.referral_code || ref.id.substring(0, 8),
-            name: ref.name,
-            created_at: new Date(ref.created_at).toLocaleDateString('pt-BR'),
-            matrix: pos ? `#001` : '---', 
-            level: pos ? pos.level : 0,
-            position: pos ? pos.position_index : 0,
-            status: ref.status
+            id: ref?.referral_code || pos.user_id.substring(0, 8),
+            name: ref?.name || 'Usuário',
+            created_at: ref ? new Date(ref.created_at).toLocaleDateString('pt-BR') : 'N/A',
+            matrix: `#001`, // Simplified for MVP
+            level: pos.level,
+            position: pos.position_index,
+            status: ref?.status || 'ACTIVE'
           };
         });
 

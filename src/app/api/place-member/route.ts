@@ -39,7 +39,8 @@ export async function POST(request: Request) {
       email: email || '',
       phone: phone || '',
       referral_code: refCode,
-      role: sponsorCode.toUpperCase() === 'ROOT' ? 'ADMIN' : 'USER'
+      role: sponsorCode.toUpperCase() === 'ROOT' ? 'ADMIN' : 'USER',
+      sponsor_id: sponsorCode.toUpperCase() === 'ROOT' ? null : sponsor.id
     }]);
 
     if (profileError) {
