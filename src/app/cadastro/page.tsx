@@ -62,7 +62,10 @@ function CadastroForm() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             newUserId: authData.user.id,
-            sponsorCode: sponsorCode // A API vai traduzir o código para o ID real do patrocinador
+            email: email,
+            name: name,
+            phone: phone,
+            sponsorCode: sponsorCode
           })
         });
         
