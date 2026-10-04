@@ -55,29 +55,39 @@ export default function MatrixView() {
         });
 
         // Fetch all positions in this matrix
-        const { data: positions } = await supabase
+        const { data: positions, error: posError } = await supabase
           .from('matrix_positions')
-          .select(`
-            user_id,
-            position_index,
-            level,
-            is_direct_referral,
-            profiles!matrix_positions_user_id_fkey (
-              name,
-              avatar_url
-            )
-          `)
+          .select('user_id, position_index, level, is_direct_referral')
           .eq('matrix_id', matrixData.id)
           .order('position_index', { ascending: true });
 
-        if (positions) {
+        if (posError) {
+          console.error("Erro ao buscar posições:", posError);
+        }
+
+        if (positions && positions.length > 0) {
+          // Fetch profiles for these users manually to avoid PostgREST FK ambiguity
+          const userIds = positions.map(p => p.user_id);
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, name, avatar_url')
+            .in('id', userIds);
+
+          const profileMap: Record<string, any> = {};
+          if (profilesData) {
+            profilesData.forEach(p => {
+              profileMap[p.id] = p;
+            });
+          }
+
           positions.forEach((pos: any) => {
+            const userProfile = profileMap[pos.user_id];
             networkMembers.push({
               id: pos.user_id,
-              name: pos.profiles?.name || 'Membro',
+              name: userProfile?.name || 'Membro',
               level: pos.level,
               position: pos.position_index,
-              avatar: pos.profiles?.avatar_url || `https://i.pravatar.cc/150?u=${pos.position_index}`,
+              avatar: userProfile?.avatar_url || `https://i.pravatar.cc/150?u=${pos.position_index}`,
               isDirect: pos.is_direct_referral
             });
           });
