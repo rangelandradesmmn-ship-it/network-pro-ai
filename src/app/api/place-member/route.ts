@@ -31,6 +31,16 @@ export async function POST(request: Request) {
       ruleVersionId = rules[0].id;
     }
 
+    // Get Sponsor ID if not ROOT
+    let sponsorId = null;
+    if (sponsorCode.toUpperCase() !== 'ROOT') {
+      const { data: sponsor, error: sponsorError } = await supabase.from('profiles').select('id').eq('referral_code', sponsorCode).single();
+      if (sponsorError || !sponsor) {
+        return NextResponse.json({ error: 'Código do patrocinador não encontrado.' }, { status: 404 });
+      }
+      sponsorId = sponsor.id;
+    }
+
     // 2. Create Profile
     const refCode = 'NP' + Math.floor(100000 + Math.random() * 900000);
     const { error: profileError } = await supabase.from('profiles').insert([{
@@ -40,7 +50,7 @@ export async function POST(request: Request) {
       phone: phone || '',
       referral_code: refCode,
       role: sponsorCode.toUpperCase() === 'ROOT' ? 'ADMIN' : 'USER',
-      sponsor_id: sponsorCode.toUpperCase() === 'ROOT' ? null : sponsor.id
+      sponsor_id: sponsorId
     }]);
 
     if (profileError) {
@@ -68,16 +78,9 @@ export async function POST(request: Request) {
        }, { status: 200 });
     }
 
-    // Get Sponsor ID
-    const { data: sponsor, error: sponsorError } = await supabase.from('profiles').select('id').eq('referral_code', sponsorCode).single();
-    
-    if (sponsorError || !sponsor) {
-      return NextResponse.json({ error: 'Código do patrocinador não encontrado.' }, { status: 404 });
-    }
-
     // Run the RPC for Spillover placement
     const { data, error } = await supabase.rpc('place_user_in_matrix', { 
-      p_sponsor_id: sponsor.id, 
+      p_sponsor_id: sponsorId, 
       p_new_user_id: newUserId 
     });
     
