@@ -152,12 +152,18 @@ export default function PainelAdmin() {
         setStats({ totalUsers: totalUsers||0, usersToday: usersToday||0, activeMatrices: activeMatrices||0, completedMatrices: completedMatrices||0, totalMiles, totalAdmins });
 
         // Load Tables for Admin & Super Admin
-        const { data: ledgerData } = await tFilter(supabase.from('financial_ledger').select(`id, created_at, description, amount_miles, profiles!financial_ledger_user_id_fkey (name, referral_code)`).order('created_at', { ascending: false }).limit(10));
+        const { data: ledgerData } = await tFilter(supabase.from('financial_ledger').select(`id, created_at, description, amount_miles, profiles!financial_ledger_user_id_fkey (name, referral_code)`).order('created_at', { ascending: false }).limit(50));
         if (ledgerData) {
-          setAudit(ledgerData.map((item: any) => ({
-            date: new Date(item.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
-            action: item.description, admin: 'Sistema', target: (item.profiles as any)?.referral_code || '---', details: `+${item.amount_miles} Milhas processadas`
-          })));
+          setAudit(ledgerData.map((item: any) => {
+            const isNegative = item.amount_miles < 0;
+            const sign = isNegative ? '' : '+';
+            return {
+              date: new Date(item.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
+              action: item.description, 
+              target: (item.profiles as any)?.name || 'Usuário', 
+              details: `${sign}${item.amount_miles} Milhas`
+            };
+          }));
         }
 
         // Fetch pending payments
@@ -330,6 +336,36 @@ export default function PainelAdmin() {
                   <td className="p-4">
                     <button onClick={() => handleApprove(item.from_user_id)} className="bg-green-500 text-white px-4 py-1 rounded font-bold hover:bg-green-600 transition-colors">Aprovar Matriz</button>
                   </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Extrato Global Financeiro */}
+      <div className="bg-[#0E1B2B] rounded-2xl border border-gray-500/20 shadow-lg overflow-hidden mb-8">
+        <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-gray-300">Extrato Global de Transações</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-500/5 border-b border-[#91A4B7]/20 text-sm">
+                <th className="p-4 font-bold text-gray-400">Data</th>
+                <th className="p-4 font-bold text-gray-400">Transação</th>
+                <th className="p-4 font-bold text-gray-400">Usuário Afetado</th>
+                <th className="p-4 font-bold text-gray-400 text-right">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {audit.length === 0 && (<tr><td colSpan={4} className="p-8 text-center text-[#91A4B7]">Nenhuma transação registrada.</td></tr>)}
+              {audit.map((item, idx) => (
+                <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 text-sm">
+                  <td className="p-4 text-[#91A4B7]">{item.date}</td>
+                  <td className="p-4 font-medium text-white">{item.action}</td>
+                  <td className="p-4 text-[#91A4B7]">{item.target}</td>
+                  <td className={`p-4 font-bold text-right ${item.details.includes('-') ? 'text-red-500' : 'text-[#00E89D]'}`}>{item.details}</td>
                 </tr>
               ))}
             </tbody>
