@@ -11,13 +11,21 @@ export default function ExtratoMilhas() {
   // Modal de Saque
   const [showModal, setShowModal] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState<number | ''>('');
+  const [pixKey, setPixKey] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
+  const [tenantId, setTenantId] = useState<string | null>(null);
 
   async function loadMilhas() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
+
+      const { data: profile } = await supabase.from('profiles').select('tenant_id, pix_key').eq('id', user.id).single();
+      if (profile) {
+        setTenantId(profile.tenant_id);
+        if (profile.pix_key) setPixKey(profile.pix_key);
+      }
 
       const { data } = await supabase
         .from('financial_ledger')
@@ -63,34 +71,44 @@ export default function ExtratoMilhas() {
       alert('Valor inválido ou saldo insuficiente.');
       return;
     }
+    if (!pixKey || pixKey.trim() === '') {
+      alert('Por favor, informe a sua Chave PIX.');
+      return;
+    }
     
     try {
+      // Salva a chave PIX no perfil do usuário para o futuro
+      await supabase.from('profiles').update({ pix_key: pixKey }).eq('id', userId);
+
       // 1. Registra o pedido de saque
       const { error: wError } = await supabase.from('withdrawals').insert({
         user_id: userId,
         amount_miles: amount,
-        status: 'PENDING'
+        status: 'PENDING',
+        tenant_id: tenantId,
+        pix_key: pixKey
       });
       if (wError) throw wError;
 
-      // 2. Debita as milhas do saldo imediatamente (como APPROVED para subtrair)
+      // 2. Debita as milhas do saldo imediatamente
       const { error: lError } = await supabase.from('financial_ledger').insert({
         user_id: userId,
         from_user_id: userId,
         amount_miles: -amount,
         description: 'Solicitação de Saque',
         status: 'APPROVED',
-        level_earned: 0
+        level_earned: 0,
+        tenant_id: tenantId
       });
       if (lError) throw lError;
 
-      alert('Saque solicitado com sucesso! Aguarde a aprovação do Admin.');
+      alert('Saque solicitado com sucesso! Aguarde a transferência via PIX.');
       setShowModal(false);
       setWithdrawAmount('');
       loadMilhas(); // Recarrega os dados
     } catch (error) {
       console.error(error);
-      alert('Erro ao solicitar saque.');
+      alert('Erro ao solicitar saque. Tente novamente.');
     }
   };
 
@@ -170,7 +188,7 @@ export default function ExtratoMilhas() {
             <h3 className="text-xl font-bold text-white mb-2">Solicitar Resgate</h3>
             <p className="text-sm text-[#91A4B7] mb-6">Saldo disponível: <strong className="text-[#00E89D]">{totalAprovado} Milhas</strong></p>
             
-            <div className="mb-6">
+            <div className="mb-4">
               <label className="block text-xs font-bold text-[#91A4B7] uppercase mb-2">Quantidade a resgatar</label>
               <input 
                 type="number" 
@@ -179,6 +197,18 @@ export default function ExtratoMilhas() {
                 className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white outline-none focus:border-[#00AEEF] transition-colors"
                 placeholder="Ex: 50"
               />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-xs font-bold text-[#91A4B7] uppercase mb-2">Sua Chave PIX</label>
+              <input 
+                type="text" 
+                value={pixKey}
+                onChange={e => setPixKey(e.target.value)}
+                className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white outline-none focus:border-[#00E89D] transition-colors"
+                placeholder="CPF, Email, Telefone ou Chave Aleatória"
+              />
+              <p className="text-[10px] text-yellow-500 mt-1">* Confira sua chave antes de solicitar o saque.</p>
             </div>
             
             <div className="flex justify-end gap-3">

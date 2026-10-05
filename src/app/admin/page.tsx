@@ -171,10 +171,10 @@ export default function PainelAdmin() {
         }
 
         // Fetch withdrawals
-        const { data: wData } = await tFilter(supabase.from('withdrawals').select('id, amount_miles, created_at, user_id, profiles!withdrawals_user_id_fkey(name)').eq('status', 'PENDING').order('created_at', { ascending: false }));
+        const { data: wData } = await tFilter(supabase.from('withdrawals').select('id, amount_miles, created_at, user_id, pix_key, profiles!withdrawals_user_id_fkey(name)').eq('status', 'PENDING').order('created_at', { ascending: false }));
         if (wData) {
           setWithdrawals(wData.map((w: any) => ({
-            id: w.id, user_id: w.user_id, amount_miles: w.amount_miles,
+            id: w.id, user_id: w.user_id, amount_miles: w.amount_miles, pix_key: w.pix_key,
             date: new Date(w.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }), userName: (w.profiles as any)?.name || 'Usuário'
           })));
         }
@@ -284,17 +284,19 @@ export default function PainelAdmin() {
               <tr className="bg-[#00AEEF]/5 border-b border-[#91A4B7]/20 text-sm">
                 <th className="p-4 font-bold text-[#00AEEF]">Data</th>
                 <th className="p-4 font-bold text-[#00AEEF]">Usuário</th>
-                <th className="p-4 font-bold text-[#00AEEF] text-right">Valor Solicitado</th>
+                <th className="p-4 font-bold text-[#00AEEF]">Chave PIX</th>
+                <th className="p-4 font-bold text-[#00AEEF] text-right">Valor</th>
                 <th className="p-4 font-bold text-[#00AEEF] text-center">Ações</th>
               </tr>
             </thead>
             <tbody>
-              {withdrawals.length === 0 && (<tr><td colSpan={4} className="p-8 text-center text-[#91A4B7]">Nenhum saque pendente.</td></tr>)}
+              {withdrawals.length === 0 && (<tr><td colSpan={5} className="p-8 text-center text-[#91A4B7]">Nenhum saque pendente.</td></tr>)}
               {withdrawals.map((item, idx) => (
                 <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 text-sm">
                   <td className="p-4 text-[#91A4B7]">{item.date}</td>
                   <td className="p-4 font-bold text-white">{item.userName}</td>
-                  <td className="p-4 font-black text-[#00AEEF] text-right">{item.amount_miles} Milhas</td>
+                  <td className="p-4 text-yellow-500 font-mono">{item.pix_key || 'Não informada'}</td>
+                  <td className="p-4 font-black text-[#00AEEF] text-right">{item.amount_miles}</td>
                   <td className="p-4 flex justify-center gap-2">
                     <button onClick={() => handleApproveWithdraw(item.id)} className="bg-[#00E89D] text-[#07111F] px-4 py-1 rounded font-bold hover:bg-[#00C585] transition-colors">Aprovar</button>
                     <button onClick={() => handleRejectWithdraw(item.id, item.user_id, item.amount_miles)} className="bg-red-500 text-white px-4 py-1 rounded font-bold hover:bg-red-600 transition-colors">Recusar (Estorno)</button>
