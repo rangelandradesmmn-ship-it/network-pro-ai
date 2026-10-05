@@ -40,14 +40,14 @@ export default function MinhasMatrizes() {
 
   return (
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
-      <h1 className="text-2xl font-bold mb-6 text-[#00AEEF]">Histórico de Matrizes</h1>
+      <h1 className="text-2xl font-bold mb-6 text-[var(--primary-color)]">Histórico de Matrizes</h1>
       
       <p className="text-[#91A4B7] mb-8 max-w-2xl">
         Aqui você encontra o registro imutável de todos os seus ciclos. Cada nova matriz começa vazia (0/155). As matrizes fechadas continuam disponíveis para auditoria da rede.
       </p>
 
       {loading ? (
-        <div className="text-[#00AEEF]">Carregando histórico...</div>
+        <div className="text-[var(--primary-color)]">Carregando histórico...</div>
       ) : matrizes.length === 0 ? (
         <div className="text-[#91A4B7]">Nenhuma matriz encontrada.</div>
       ) : (
@@ -57,9 +57,9 @@ export default function MinhasMatrizes() {
             const percent = Math.round((matriz.total_members / matriz.capacity) * 100);
             
             return (
-              <div key={matriz.id} className={`bg-[#0E1B2B] p-6 rounded-2xl border shadow-lg relative ${isCurrent ? 'border-[#00AEEF]' : 'border-[#91A4B7]/20'}`}>
+              <div key={matriz.id} className={`bg-[#0E1B2B] p-6 rounded-2xl border shadow-lg relative ${isCurrent ? 'border-[var(--primary-color)]' : 'border-[#91A4B7]/20'}`}>
                 {isCurrent && (
-                  <span className="absolute top-4 right-4 bg-[#00AEEF]/20 text-[#00AEEF] text-xs font-bold px-2 py-1 rounded">ATUAL</span>
+                  <span className="absolute top-4 right-4 bg-[var(--primary-color)]/20 text-[var(--primary-color)] text-xs font-bold px-2 py-1 rounded">ATUAL</span>
                 )}
                 <h3 className="text-xl font-bold mb-2">Matriz #{String(matriz.matrix_number).padStart(3, '0')}</h3>
                 
@@ -74,7 +74,7 @@ export default function MinhasMatrizes() {
                 
                 <div className="w-full bg-[#07111F] rounded-full h-2 mb-4 overflow-hidden">
                   <div 
-                    className={`h-2 rounded-full ${matriz.status === 'COMPLETED' ? 'bg-[#00E89D]' : 'bg-gradient-to-r from-[#00AEEF] to-[#00E5FF]'}`}
+                    className={`h-2 rounded-full ${matriz.status === 'COMPLETED' ? 'bg-[#00E89D]' : 'bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)]'}`}
                     style={{ width: `${percent}%` }}
                   ></div>
                 </div>
@@ -82,7 +82,7 @@ export default function MinhasMatrizes() {
                 <p className="text-xs text-[#91A4B7] mb-4">Criada em: {new Date(matriz.created_at).toLocaleDateString('pt-BR')}</p>
 
                 <Link href="/minha-rede">
-                  <button className="w-full py-2 bg-[#07111F] border border-[#91A4B7]/30 hover:bg-[#00AEEF]/10 hover:border-[#00AEEF]/50 transition-colors rounded-lg text-sm font-semibold">
+                  <button className="w-full py-2 bg-[#07111F] border border-[#91A4B7]/30 hover:bg-[var(--primary-color)]/10 hover:border-[var(--primary-color)]/50 transition-colors rounded-lg text-sm font-semibold">
                     Visualizar Estrutura
                   </button>
                 </Link>

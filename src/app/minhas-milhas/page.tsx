@@ -114,7 +114,7 @@ export default function ExtratoMilhas() {
 
   return (
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
-      <h1 className="text-2xl font-bold mb-8 text-[#00AEEF]">Minhas Milhas</h1>
+      <h1 className="text-2xl font-bold mb-8 text-[var(--primary-color)]">Minhas Milhas</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#00E89D]/30 shadow-lg relative overflow-hidden">
@@ -134,14 +134,14 @@ export default function ExtratoMilhas() {
           <h2 className="text-lg font-bold">Extrato Detalhado</h2>
           <button 
             onClick={() => setShowModal(true)}
-            className="text-sm bg-[#00AEEF] text-white px-4 py-2 rounded font-bold hover:bg-[#0091C7] transition-colors shadow-[0_0_15px_rgba(0,174,239,0.4)]"
+            className="text-sm bg-[var(--primary-color)] text-white px-4 py-2 rounded font-bold hover:bg-[#0091C7] transition-colors shadow-[0_0_15px_rgba(0,174,239,0.4)]"
           >
             Resgatar Milhas
           </button>
         </div>
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="p-8 text-center text-[#00AEEF]">Carregando extrato...</div>
+            <div className="p-8 text-center text-[var(--primary-color)]">Carregando extrato...</div>
           ) : (
             <table className="w-full text-left border-collapse">
               <thead>
@@ -194,7 +194,7 @@ export default function ExtratoMilhas() {
                 type="number" 
                 value={withdrawAmount}
                 onChange={e => setWithdrawAmount(Number(e.target.value))}
-                className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white outline-none focus:border-[#00AEEF] transition-colors"
+                className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white outline-none focus:border-[var(--primary-color)] transition-colors"
                 placeholder="Ex: 50"
               />
             </div>
@@ -220,7 +220,7 @@ export default function ExtratoMilhas() {
               </button>
               <button 
                 onClick={handleWithdraw}
-                className="px-4 py-2 rounded text-sm font-bold bg-[#00AEEF] text-white hover:bg-[#0091C7] transition-colors"
+                className="px-4 py-2 rounded text-sm font-bold bg-[var(--primary-color)] text-white hover:bg-[#0091C7] transition-colors"
               >
                 Confirmar Saque
               </button>

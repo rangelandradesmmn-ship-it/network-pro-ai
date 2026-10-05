@@ -30,14 +30,25 @@ export default function Sidebar() {
   };
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const [companyName, setCompanyName] = useState('NETWORK PRO AI');
+  const [shortName, setShortName] = useState('NP AI');
 
   useEffect(() => {
     async function checkAdmin() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single();
         if (profile?.role === 'ADMIN' || profile?.role === 'SUPER_ADMIN') {
           setIsAdmin(true);
+        }
+        
+        if (profile?.tenant_id) {
+          const { data: settings } = await supabase.from('tenant_settings').select('company_name').eq('tenant_id', profile.tenant_id).single();
+          if (settings && settings.company_name) {
+            setCompanyName(settings.company_name.toUpperCase());
+            const initials = settings.company_name.split(' ').map((n: string) => n[0]).join('').substring(0, 3);
+            setShortName(initials);
+          }
         }
       }
     }
@@ -58,7 +69,7 @@ export default function Sidebar() {
     <>
       {/* Mobile Header / Menu Button */}
       <div className="md:hidden flex justify-between items-center p-4 bg-[#0E1B2B] border-b border-[#91A4B7]/20">
-        <h1 className="text-xl font-bold text-[#00AEEF]">NP AI</h1>
+        <h1 className="text-xl font-bold text-[var(--primary-color)]">{shortName}</h1>
         <button onClick={() => setIsOpen(!isOpen)} className="text-[#F4F7FA] text-2xl">
           ☰
         </button>
@@ -67,8 +78,8 @@ export default function Sidebar() {
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#0E1B2B] border-r border-[#91A4B7]/20 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 flex flex-col`}>
         <div className="p-6 hidden md:block">
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00AEEF] to-[#00E5FF]">
-            NETWORK PRO AI
+          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)]">
+            {companyName}
           </h1>
         </div>
         
@@ -79,7 +90,7 @@ export default function Sidebar() {
               href={item.path}
               onClick={() => setIsOpen(false)}
             >
-              <div className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${pathname === item.path ? 'bg-[#00AEEF]/10 text-[#00AEEF] border border-[#00AEEF]/20' : 'text-[#91A4B7] hover:bg-[#07111F] hover:text-[#F4F7FA]'}`}>
+              <div className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${pathname === item.path ? 'bg-[var(--primary-color)]/10 text-[var(--primary-color)] border border-[var(--primary-color)]/20' : 'text-[#91A4B7] hover:bg-[#07111F] hover:text-[#F4F7FA]'}`}>
                 <span className="flex items-center justify-center opacity-80">{item.icon}</span>
                 <span className="font-medium">{item.name}</span>
               </div>
@@ -89,7 +100,7 @@ export default function Sidebar() {
         
         <div className="p-4 border-t border-[#91A4B7]/20">
           <Link href="/configuracoes">
-            <div className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors ${pathname === '/configuracoes' ? 'bg-[#00AEEF]/10 text-[#00AEEF] border border-[#00AEEF]/20' : 'text-[#91A4B7] hover:bg-[#07111F] hover:text-[#F4F7FA]'}`}>
+            <div className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors ${pathname === '/configuracoes' ? 'bg-[var(--primary-color)]/10 text-[var(--primary-color)] border border-[var(--primary-color)]/20' : 'text-[#91A4B7] hover:bg-[#07111F] hover:text-[#F4F7FA]'}`}>
               <span className="flex items-center justify-center opacity-80"><Settings size={20} /></span>
               <span className="font-medium">Configurações</span>
             </div>

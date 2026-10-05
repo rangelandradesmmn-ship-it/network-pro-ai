@@ -71,23 +71,23 @@ export default function MinhasIndicacoes() {
 
   return (
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
-      <h1 className="text-2xl font-bold mb-6 text-[#00AEEF]">Minhas Indicações</h1>
+      <h1 className="text-2xl font-bold mb-6 text-[var(--primary-color)]">Minhas Indicações</h1>
       
       <div className="bg-[#0E1B2B] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-[#00AEEF]">Carregando suas indicações...</div>
+          <div className="p-8 text-center text-[var(--primary-color)]">Carregando suas indicações...</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#00AEEF]/10 border-b border-[#91A4B7]/20">
-                  <th className="p-4 font-semibold text-[#00E5FF]">ID</th>
-                  <th className="p-4 font-semibold text-[#00E5FF]">Nome</th>
-                  <th className="p-4 font-semibold text-[#00E5FF]">Data Cadastro</th>
-                  <th className="p-4 font-semibold text-[#00E5FF]">Matriz</th>
-                  <th className="p-4 font-semibold text-[#00E5FF]">Nível</th>
-                  <th className="p-4 font-semibold text-[#00E5FF]">Posição</th>
-                  <th className="p-4 font-semibold text-[#00E5FF]">Status</th>
+                <tr className="bg-[var(--primary-color)]/10 border-b border-[#91A4B7]/20">
+                  <th className="p-4 font-semibold text-[var(--secondary-color)]">ID</th>
+                  <th className="p-4 font-semibold text-[var(--secondary-color)]">Nome</th>
+                  <th className="p-4 font-semibold text-[var(--secondary-color)]">Data Cadastro</th>
+                  <th className="p-4 font-semibold text-[var(--secondary-color)]">Matriz</th>
+                  <th className="p-4 font-semibold text-[var(--secondary-color)]">Nível</th>
+                  <th className="p-4 font-semibold text-[var(--secondary-color)]">Posição</th>
+                  <th className="p-4 font-semibold text-[var(--secondary-color)]">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -101,7 +101,7 @@ export default function MinhasIndicacoes() {
                     <td className="p-4 font-mono text-sm text-[#91A4B7]">{ref.id}</td>
                     <td className="p-4 font-medium">{ref.name}</td>
                     <td className="p-4 text-[#91A4B7]">{ref.created_at}</td>
-                    <td className="p-4 text-[#00AEEF]">{ref.matrix}</td>
+                    <td className="p-4 text-[var(--primary-color)]">{ref.matrix}</td>
                     <td className="p-4">{ref.level}</td>
                     <td className="p-4">{ref.position}</td>
                     <td className="p-4">

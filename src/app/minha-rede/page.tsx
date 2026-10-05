@@ -98,7 +98,7 @@ export default function MatrixView() {
   const TreeNode = ({ member, isRoot = false }: { member: Member, isRoot?: boolean }) => {
     return (
       <div className="flex flex-col items-center relative">
-        <div className={`p-2 m-2 rounded-lg border-2 w-32 flex flex-col items-center shadow-lg transition-transform hover:scale-105 relative z-10 ${member.isDirect ? 'border-[#00AEEF] bg-[#0E1B2B]' : 'border-[#00E89D] bg-[#0E1B2B]'}`}>
+        <div className={`p-2 m-2 rounded-lg border-2 w-32 flex flex-col items-center shadow-lg transition-transform hover:scale-105 relative z-10 ${member.isDirect ? 'border-[var(--primary-color)] bg-[#0E1B2B]' : 'border-[#00E89D] bg-[#0E1B2B]'}`}>
           <img src={member.avatar} alt="avatar" className="w-12 h-12 rounded-full mb-2 object-cover" />
           <p className="text-xs text-center font-bold text-white truncate w-full">{member.name}</p>
           <p className="text-[10px] text-[#91A4B7]">{isRoot ? 'ROOT' : member.isDirect ? 'Direto' : 'Spillover'}</p>
@@ -123,14 +123,14 @@ export default function MatrixView() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-[#07111F] text-[#00AEEF] flex justify-center items-center">Carregando mapa da rede...</div>;
+    return <div className="min-h-screen bg-[#07111F] text-[var(--primary-color)] flex justify-center items-center">Carregando mapa da rede...</div>;
   }
 
   return (
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8 overflow-auto flex flex-col">
-      <h1 className="text-2xl font-bold mb-6 text-[#00AEEF]">Árvore da Matriz</h1>
+      <h1 className="text-2xl font-bold mb-6 text-[var(--primary-color)]">Árvore da Matriz</h1>
       <div className="flex items-center gap-4 mb-8 text-sm bg-[#0E1B2B] p-4 rounded-xl border border-[#91A4B7]/20 w-fit">
-        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded border-2 border-[#00AEEF] bg-[#0E1B2B]"></div> Sua Indicação Direta</div>
+        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded border-2 border-[var(--primary-color)] bg-[#0E1B2B]"></div> Sua Indicação Direta</div>
         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded border-2 border-[#00E89D] bg-[#0E1B2B]"></div> Spillover (Caiu na sua rede)</div>
       </div>
       

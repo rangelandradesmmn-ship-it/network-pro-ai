@@ -102,7 +102,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-[#07111F] text-[#00AEEF] flex justify-center items-center">Carregando dados reais...</div>;
+    return <div className="min-h-screen bg-[#07111F] text-[var(--primary-color)] flex justify-center items-center">Carregando dados reais...</div>;
   }
 
   const referralLink = profile ? `${window.location.origin}/cadastro?ref=${profile.referral_code}` : '';
@@ -116,7 +116,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8 relative">
       <header className="flex justify-between items-center mb-10">
         <div>
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00AEEF] to-[#00E5FF]">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)]">
             NETWORK PRO AI
           </h1>
           <p className="text-[#91A4B7] mt-1">Bem-vindo(a) de volta, {profile?.name || 'Visitante'}</p>
@@ -131,7 +131,7 @@ export default function Dashboard() {
               <p className="text-[10px] text-[#91A4B7]">Vence: {new Date(profile.active_until).toLocaleDateString('pt-BR')}</p>
             )}
           </div>
-          <img src={profile?.avatar_url || "https://i.pravatar.cc/150?u=admin"} alt="Perfil" className="w-12 h-12 rounded-full border-2 border-[#00AEEF]" />
+          <img src={profile?.avatar_url || "https://i.pravatar.cc/150?u=admin"} alt="Perfil" className="w-12 h-12 rounded-full border-2 border-[var(--primary-color)]" />
         </div>
       </header>
 
@@ -180,7 +180,7 @@ export default function Dashboard() {
                     Link bloqueado. Pague a ativação acima para liberar.
                   </p>
                 ) : (
-                  <p className="text-lg font-mono text-[#00AEEF] bg-[#07111F] p-2 rounded-lg truncate mt-2">
+                  <p className="text-lg font-mono text-[var(--primary-color)] bg-[#07111F] p-2 rounded-lg truncate mt-2">
                     {referralLink || 'Link indisponível'}
                   </p>
                 )}
@@ -189,14 +189,14 @@ export default function Dashboard() {
                 <button 
                   onClick={() => navigator.clipboard.writeText(referralLink)}
                   disabled={needsActivation}
-                  className="flex-1 bg-[#00AEEF] hover:bg-[#00E5FF] text-[#07111F] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[#07111F] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Copiar
                 </button>
                 <button 
                   onClick={() => setShowQR(true)}
                   disabled={needsActivation}
-                  className="flex-1 bg-[#0E1B2B] border border-[#00AEEF] hover:bg-[#00AEEF]/20 text-[#00AEEF] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-[#0E1B2B] border border-[var(--primary-color)] hover:bg-[var(--primary-color)]/20 text-[var(--primary-color)] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   QR Code
                 </button>
@@ -221,10 +221,10 @@ export default function Dashboard() {
           <h3 className="text-[#91A4B7] mb-2 font-semibold">Matriz Atual: #{matrix?.matrix_number ? String(matrix.matrix_number).padStart(3, '0') : '---'}</h3>
           <div className="flex justify-between items-end mb-2">
             <p className="text-3xl font-bold text-white">{totalMembers} <span className="text-lg text-[#91A4B7]">/ {capacity}</span></p>
-            <p className="text-[#00E5FF] font-bold">{percentage}%</p>
+            <p className="text-[var(--secondary-color)] font-bold">{percentage}%</p>
           </div>
           <div className="w-full bg-[#07111F] rounded-full h-3 mb-4 overflow-hidden">
-            <div className="bg-gradient-to-r from-[#00AEEF] to-[#00E5FF] h-3 rounded-full" style={{ width: `${percentage}%` }}></div>
+            <div className="bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] h-3 rounded-full" style={{ width: `${percentage}%` }}></div>
           </div>
           <div className="flex justify-between text-xs text-[#91A4B7]">
             <span className="w-full text-center">Níveis em preenchimento inteligente</span>

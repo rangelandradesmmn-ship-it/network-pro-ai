@@ -1,12 +1,9 @@
 "use client";
-import Sidebar from "@/components/Sidebar";
-import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '@/utils/supabase';
 
-export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isPublicPage = pathname === '/' || pathname === '/cadastro' || pathname === '/login';
+export default function ClientProvider({ children }: { children: React.ReactNode }) {
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     async function loadWhiteLabel() {
@@ -27,28 +24,20 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
         }
       } catch (e) {
         console.error(e);
+      } finally {
+        setLoaded(true);
       }
     }
-    
-    // Set default fallback colors if not overridden
+    loadWhiteLabel();
+  }, []);
+
+  // Set default fallback colors if not overridden
+  useEffect(() => {
     if (!document.documentElement.style.getPropertyValue('--primary-color')) {
       document.documentElement.style.setProperty('--primary-color', '#00AEEF');
       document.documentElement.style.setProperty('--secondary-color', '#00E5FF');
     }
-    
-    loadWhiteLabel();
-  }, [pathname]);
+  }, []);
 
-  if (isPublicPage) {
-    return <main className="min-h-screen bg-[#07111F] text-[#F4F7FA]">{children}</main>;
-  }
-
-  return (
-    <div className="flex h-screen overflow-hidden bg-[#07111F]">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
-    </div>
-  );
+  return <>{children}</>;
 }

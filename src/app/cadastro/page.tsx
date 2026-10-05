@@ -86,7 +86,7 @@ function CadastroForm() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-[#07111F]">
       <Link href="/">
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00AEEF] to-[#00E5FF] mb-8">
+        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] mb-8">
           NETWORK PRO AI
         </h1>
       </Link>
@@ -95,7 +95,7 @@ function CadastroForm() {
         <h2 className="text-2xl font-bold text-white mb-6">Criar Conta</h2>
         
         {sponsorCode && (
-          <div className="mb-6 p-3 bg-[#00AEEF]/10 border border-[#00AEEF]/30 rounded-lg text-sm text-[#00AEEF]">
+          <div className="mb-6 p-3 bg-[var(--primary-color)]/10 border border-[var(--primary-color)]/30 rounded-lg text-sm text-[var(--primary-color)]">
             Você foi convidado por: <span className="font-bold">{sponsorCode}</span>
           </div>
         )}
@@ -109,42 +109,42 @@ function CadastroForm() {
         <form className="space-y-4" onSubmit={handleCadastro}>
           <div>
             <label className="block text-sm font-medium text-[#91A4B7] mb-1">Nome Completo</label>
-            <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[#00AEEF] focus:outline-none transition-colors" placeholder="Ex: João da Silva" />
+            <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="Ex: João da Silva" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#91A4B7] mb-1">E-mail</label>
-            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[#00AEEF] focus:outline-none transition-colors" placeholder="joao@exemplo.com" />
+            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="joao@exemplo.com" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#91A4B7] mb-1">WhatsApp</label>
-            <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[#00AEEF] focus:outline-none transition-colors" placeholder="(11) 99999-9999" />
+            <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="(11) 99999-9999" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#91A4B7] mb-1">Código do Patrocinador</label>
-            <input type="text" required value={sponsorCode} onChange={e => setSponsorCode(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[#00AEEF] focus:outline-none transition-colors" placeholder="Ex: NP123456" />
+            <input type="text" required value={sponsorCode} onChange={e => setSponsorCode(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="Ex: NP123456" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#91A4B7] mb-1">Senha</label>
-              <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[#00AEEF] focus:outline-none transition-colors" />
+              <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#91A4B7] mb-1">Confirmar Senha</label>
-              <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[#00AEEF] focus:outline-none transition-colors" />
+              <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" />
             </div>
           </div>
 
-          <button type="submit" disabled={loading} className="w-full py-4 mt-6 bg-gradient-to-r from-[#00AEEF] to-[#00E5FF] hover:from-[#00E5FF] hover:to-[#00E89D] text-[#07111F] font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(0,174,239,0.3)] disabled:opacity-50">
+          <button type="submit" disabled={loading} className="w-full py-4 mt-6 bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] hover:from-[var(--secondary-color)] hover:to-[#00E89D] text-[#07111F] font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(0,174,239,0.3)] disabled:opacity-50">
             {loading ? 'PROCESSANDO...' : 'FINALIZAR CADASTRO'}
           </button>
         </form>
         
         <p className="mt-6 text-center text-sm text-[#91A4B7]">
-          Já possui uma conta? <Link href="/login" className="text-[#00AEEF] hover:underline">Entrar</Link>
+          Já possui uma conta? <Link href="/login" className="text-[var(--primary-color)] hover:underline">Entrar</Link>
         </p>
       </div>
     </div>
@@ -153,7 +153,7 @@ function CadastroForm() {
 
 export default function Cadastro() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#07111F] flex items-center justify-center text-[#00AEEF]">Carregando...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#07111F] flex items-center justify-center text-[var(--primary-color)]">Carregando...</div>}>
       <CadastroForm />
     </Suspense>
   );

@@ -193,7 +193,7 @@ export default function PainelAdmin() {
     loadAdminData();
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-[#07111F] text-[#00AEEF] flex justify-center items-center">Carregando painel...</div>;
+  if (loading) return <div className="min-h-screen bg-[#07111F] text-[var(--primary-color)] flex justify-center items-center">Carregando painel...</div>;
   if (!hasAccess) return (
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8 flex justify-center items-center">
       <div className="bg-[#0E1B2B] p-8 rounded-2xl border border-red-500/20 text-center"><h2 className="text-2xl font-bold text-red-500">Acesso Negado</h2></div>
@@ -283,19 +283,19 @@ export default function PainelAdmin() {
       )}
 
       {/* Mesas de Aprovação (Visíveis para SUPER_ADMIN testando ou ADMIN real) */}
-      <div className="bg-[#0E1B2B] rounded-2xl border border-[#00AEEF]/20 shadow-lg overflow-hidden mb-8">
+      <div className="bg-[#0E1B2B] rounded-2xl border border-[var(--primary-color)]/20 shadow-lg overflow-hidden mb-8">
         <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
-          <h2 className="text-lg font-bold text-[#00AEEF]">Pedidos de Saque (Resgate de Milhas)</h2>
+          <h2 className="text-lg font-bold text-[var(--primary-color)]">Pedidos de Saque (Resgate de Milhas)</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#00AEEF]/5 border-b border-[#91A4B7]/20 text-sm">
-                <th className="p-4 font-bold text-[#00AEEF]">Data</th>
-                <th className="p-4 font-bold text-[#00AEEF]">Usuário</th>
-                <th className="p-4 font-bold text-[#00AEEF]">Chave PIX</th>
-                <th className="p-4 font-bold text-[#00AEEF] text-right">Valor</th>
-                <th className="p-4 font-bold text-[#00AEEF] text-center">Ações</th>
+              <tr className="bg-[var(--primary-color)]/5 border-b border-[#91A4B7]/20 text-sm">
+                <th className="p-4 font-bold text-[var(--primary-color)]">Data</th>
+                <th className="p-4 font-bold text-[var(--primary-color)]">Usuário</th>
+                <th className="p-4 font-bold text-[var(--primary-color)]">Chave PIX</th>
+                <th className="p-4 font-bold text-[var(--primary-color)] text-right">Valor</th>
+                <th className="p-4 font-bold text-[var(--primary-color)] text-center">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -305,7 +305,7 @@ export default function PainelAdmin() {
                   <td className="p-4 text-[#91A4B7]">{item.date}</td>
                   <td className="p-4 font-bold text-white">{item.userName}</td>
                   <td className="p-4 text-yellow-500 font-mono">{item.pix_key || 'Não informada'}</td>
-                  <td className="p-4 font-black text-[#00AEEF] text-right">{item.amount_miles}</td>
+                  <td className="p-4 font-black text-[var(--primary-color)] text-right">{item.amount_miles}</td>
                   <td className="p-4 flex justify-center gap-2">
                     <button onClick={() => handleApproveWithdraw(item.id)} className="bg-[#00E89D] text-[#07111F] px-4 py-1 rounded font-bold hover:bg-[#00C585] transition-colors">Aprovar</button>
                     <button onClick={() => handleRejectWithdraw(item.id, item.user_id, item.amount_miles)} className="bg-red-500 text-white px-4 py-1 rounded font-bold hover:bg-red-600 transition-colors">Recusar (Estorno)</button>
