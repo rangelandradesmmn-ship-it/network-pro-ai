@@ -25,18 +25,51 @@ export default function PainelAdmin() {
   
   // Super Admin Tables
   const [tenantsList, setTenantsList] = useState<any[]>([]);
+  const [saasFee, setSaasFee] = useState(500);
 
   const handlePromoteToAdmin = async (refCode: string) => {
-    if (!confirm(`Promover o dono do código ${refCode} a ADMIN (Empresa)?`)) return;
+    if (!confirm(`Promover o dono do código ${refCode} a ADMIN (Empresa)?\n\nEle será removido da sua Matriz de rede. As milhas da ativação dele serão canceladas e você receberá o valor integral de Licença SaaS (${saasFee} Milhas).`)) return;
     try {
+      // 1. Pegar usuário e Super Admin logado
+      const { data: { user } } = await supabase.auth.getUser();
       const { data: userToPromote } = await supabase.from('profiles').select('id').eq('referral_code', refCode.trim()).single();
-      if (!userToPromote) {
-        alert('Código de indicação não encontrado!');
+      
+      if (!userToPromote || !user) {
+        alert('Código de indicação não encontrado ou erro de sessão!');
         return;
       }
-      await supabase.from('profiles').update({ role: 'ADMIN', tenant_id: userToPromote.id }).eq('id', userToPromote.id);
-      alert('Usuário promovido com sucesso! Agora ele tem o próprio Painel Admin.');
+      
+      const targetId = userToPromote.id;
+
+      // 2. Atualizar para ADMIN e separar a rede (tenant próprio)
+      await supabase.from('profiles').update({ role: 'ADMIN', tenant_id: targetId }).eq('id', targetId);
+      
+      // 3. Remover ele da matrix_positions (abre buraco que será preenchido pelo próximo)
+      await supabase.from('matrix_positions').delete().eq('user_id', targetId);
+      
+      // 4. Apagar todos os pagamentos pendentes que ele gerou na rede
+      await supabase.from('financial_ledger').delete().eq('from_user_id', targetId).eq('status', 'PENDING');
+      
+      // 5. Creditar o valor integral do SaaS para o SUPER ADMIN
+      await supabase.from('financial_ledger').insert({
+        user_id: user.id, // Super Admin recebe
+        from_user_id: targetId, // Quem pagou o SaaS
+        amount_miles: saasFee,
+        description: 'Venda de Licença SaaS (Nova Empresa)',
+        status: 'APPROVED', // Já entra aprovado e libera o cliente
+        level_earned: 0,
+        tenant_id: user.id // Pertence ao financeiro do Super Admin
+      });
+
+      alert('Usuário promovido com sucesso! A licença SaaS foi creditada a você e ele já está liberado para usar.');
       window.location.reload();
+    } catch(e) { console.error(e); }
+  };
+
+  const handleSaveSaasFee = async () => {
+    try {
+      await supabase.from('system_settings').upsert({ id: 1, saas_fee: saasFee });
+      alert('Valor da licença SaaS atualizado com sucesso!');
     } catch(e) { console.error(e); }
   };
 
@@ -111,6 +144,9 @@ export default function PainelAdmin() {
           
           const { data: tenants } = await supabase.from('profiles').select('id, name, email, created_at').eq('role', 'ADMIN').order('created_at', { ascending: false });
           setTenantsList(tenants || []);
+          
+          const { data: settings } = await supabase.from('system_settings').select('saas_fee').eq('id', 1).single();
+          if (settings) setSaasFee(settings.saas_fee);
         }
 
         setStats({ totalUsers: totalUsers||0, usersToday: usersToday||0, activeMatrices: activeMatrices||0, completedMatrices: completedMatrices||0, totalMiles, totalAdmins });
@@ -188,14 +224,30 @@ export default function PainelAdmin() {
 
       {role === 'SUPER_ADMIN' && (
         <div className="bg-[#0E1B2B] rounded-2xl border border-purple-500/20 shadow-lg overflow-hidden mb-8">
-          <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
-            <h2 className="text-lg font-bold text-purple-400">Suas Empresas Clientes (Admins)</h2>
-            <button onClick={() => {
-              const code = prompt('Qual é o Código de Indicação (Ex: NP123456) do usuário que comprou a plataforma?');
-              if(code) handlePromoteToAdmin(code);
-            }} className="text-sm bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-700 transition-colors">
-              + Nova Empresa
-            </button>
+          <div className="p-6 border-b border-[#91A4B7]/20 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+              <h2 className="text-lg font-bold text-purple-400">Suas Empresas Clientes (Admins)</h2>
+              <p className="text-sm text-[#91A4B7]">Preço atual da Licença SaaS: <strong className="text-white">{saasFee} Milhas</strong></p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center bg-[#07111F] rounded border border-[#91A4B7]/30">
+                <input 
+                  type="number" 
+                  value={saasFee} 
+                  onChange={e => setSaasFee(Number(e.target.value))}
+                  className="bg-transparent text-white p-2 w-24 outline-none text-sm"
+                />
+                <button onClick={handleSaveSaasFee} className="px-3 text-xs text-purple-400 hover:text-white font-bold">Salvar Preço</button>
+              </div>
+              
+              <button onClick={() => {
+                const code = prompt('Qual é o Código de Indicação (Ex: NP123456) do usuário que comprou a plataforma?');
+                if(code) handlePromoteToAdmin(code);
+              }} className="text-sm bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-700 transition-colors">
+                + Promover a Empresa
+              </button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
