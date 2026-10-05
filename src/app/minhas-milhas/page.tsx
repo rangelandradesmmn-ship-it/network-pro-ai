@@ -113,23 +113,23 @@ export default function ExtratoMilhas() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
+    <div className="min-h-screen bg-[var(--bg-color)] text-[#F4F7FA] p-8">
       <h1 className="text-2xl font-bold mb-8 text-[var(--primary-color)]">Minhas Milhas</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#00E89D]/30 shadow-lg relative overflow-hidden">
+        <div className="bg-[var(--panel-color)] p-6 rounded-2xl border border-[#00E89D]/30 shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#00E89D]/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
           <p className="text-[#91A4B7] mb-2 font-medium">Milhas Aprovadas (Disponíveis)</p>
           <p className="text-5xl font-black text-[#00E89D]">{totalAprovado}</p>
         </div>
-        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-yellow-500/30 shadow-lg relative overflow-hidden">
+        <div className="bg-[var(--panel-color)] p-6 rounded-2xl border border-yellow-500/30 shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
           <p className="text-[#91A4B7] mb-2 font-medium">Milhas Pendentes (Aguardando Pgto)</p>
           <p className="text-5xl font-black text-yellow-500">{totalPendente}</p>
         </div>
       </div>
 
-      <div className="bg-[#0E1B2B] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
+      <div className="bg-[var(--panel-color)] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
         <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
           <h2 className="text-lg font-bold">Extrato Detalhado</h2>
           <button 
@@ -145,7 +145,7 @@ export default function ExtratoMilhas() {
           ) : (
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#07111F]/50 border-b border-[#91A4B7]/20 text-sm">
+                <tr className="bg-[var(--bg-color)]/50 border-b border-[#91A4B7]/20 text-sm">
                   <th className="p-4 font-bold text-[#91A4B7]">Data</th>
                   <th className="p-4 font-bold text-[#91A4B7]">Origem</th>
                   <th className="p-4 font-bold text-[#91A4B7]">Tipo</th>
@@ -158,7 +158,7 @@ export default function ExtratoMilhas() {
                 {extrato.length === 0 ? (
                   <tr><td colSpan={6} className="p-8 text-center text-[#91A4B7]">Nenhuma milha recebida ainda.</td></tr>
                 ) : extrato.map((item) => (
-                  <tr key={item.id} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 transition-colors">
+                  <tr key={item.id} className="border-b border-[#91A4B7]/10 hover:bg-[var(--bg-color)]/50 transition-colors">
                     <td className="p-4 text-sm text-[#91A4B7]">{item.date}</td>
                     <td className="p-4 font-medium">{item.origem}</td>
                     <td className="p-4 text-sm">{item.tipo}</td>
@@ -184,7 +184,7 @@ export default function ExtratoMilhas() {
       {/* Modal de Saque */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0E1B2B] border border-[#91A4B7]/20 p-8 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-[var(--panel-color)] border border-[#91A4B7]/20 p-8 rounded-2xl w-full max-w-md shadow-2xl">
             <h3 className="text-xl font-bold text-white mb-2">Solicitar Resgate</h3>
             <p className="text-sm text-[#91A4B7] mb-6">Saldo disponível: <strong className="text-[#00E89D]">{totalAprovado} Milhas</strong></p>
             
@@ -194,7 +194,7 @@ export default function ExtratoMilhas() {
                 type="number" 
                 value={withdrawAmount}
                 onChange={e => setWithdrawAmount(Number(e.target.value))}
-                className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white outline-none focus:border-[var(--primary-color)] transition-colors"
+                className="w-full bg-[var(--bg-color)] border border-[#91A4B7]/30 rounded-lg p-3 text-white outline-none focus:border-[var(--primary-color)] transition-colors"
                 placeholder="Ex: 50"
               />
             </div>
@@ -205,7 +205,7 @@ export default function ExtratoMilhas() {
                 type="text" 
                 value={pixKey}
                 onChange={e => setPixKey(e.target.value)}
-                className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white outline-none focus:border-[#00E89D] transition-colors"
+                className="w-full bg-[var(--bg-color)] border border-[#91A4B7]/30 rounded-lg p-3 text-white outline-none focus:border-[#00E89D] transition-colors"
                 placeholder="CPF, Email, Telefone ou Chave Aleatória"
               />
               <p className="text-[10px] text-yellow-500 mt-1">* Confira sua chave antes de solicitar o saque.</p>

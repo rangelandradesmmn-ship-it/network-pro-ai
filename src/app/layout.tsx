@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="h-full bg-[#07111F] text-[#F4F7FA]">
+      <body className="h-full bg-[var(--bg-color)] text-[#F4F7FA]">
         <AppLayoutWrapper>{children}</AppLayoutWrapper>
       </body>
     </html>

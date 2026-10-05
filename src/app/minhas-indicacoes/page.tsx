@@ -70,10 +70,10 @@ export default function MinhasIndicacoes() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
+    <div className="min-h-screen bg-[var(--bg-color)] text-[#F4F7FA] p-8">
       <h1 className="text-2xl font-bold mb-6 text-[var(--primary-color)]">Minhas Indicações</h1>
       
-      <div className="bg-[#0E1B2B] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
+      <div className="bg-[var(--panel-color)] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-[var(--primary-color)]">Carregando suas indicações...</div>
         ) : (
@@ -97,7 +97,7 @@ export default function MinhasIndicacoes() {
                   </tr>
                 )}
                 {referrals.map((ref, idx) => (
-                  <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 transition-colors">
+                  <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[var(--bg-color)]/50 transition-colors">
                     <td className="p-4 font-mono text-sm text-[#91A4B7]">{ref.id}</td>
                     <td className="p-4 font-medium">{ref.name}</td>
                     <td className="p-4 text-[#91A4B7]">{ref.created_at}</td>

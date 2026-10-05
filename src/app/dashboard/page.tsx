@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [showRenewalPopup, setShowRenewalPopup] = useState(false);
+  const [companyName, setCompanyName] = useState('NETWORK PRO AI');
 
   useEffect(() => {
     async function loadData() {
@@ -27,6 +28,13 @@ export default function Dashboard() {
 
         if (profileData) {
           setProfile({ ...profileData, total_miles: realMiles });
+          
+          if (profileData.tenant_id) {
+            const { data: settings } = await supabase.from('tenant_settings').select('company_name').eq('tenant_id', profileData.tenant_id).single();
+            if (settings?.company_name) {
+              setCompanyName(settings.company_name.toUpperCase());
+            }
+          }
           
           if (profileData.active_until) {
             const diffTime = new Date(profileData.active_until).getTime() - new Date().getTime();
@@ -102,7 +110,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-[#07111F] text-[var(--primary-color)] flex justify-center items-center">Carregando dados reais...</div>;
+    return <div className="min-h-screen bg-[var(--bg-color)] text-[var(--primary-color)] flex justify-center items-center">Carregando dados reais...</div>;
   }
 
   const referralLink = profile ? `${window.location.origin}/cadastro?ref=${profile.referral_code}` : '';
@@ -113,11 +121,11 @@ export default function Dashboard() {
   const isExpired = daysLeft !== null && daysLeft <= 0;
 
   return (
-    <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8 relative">
+    <div className="min-h-screen bg-[var(--bg-color)] text-[#F4F7FA] p-8 relative">
       <header className="flex justify-between items-center mb-10">
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)]">
-            NETWORK PRO AI
+            {companyName}
           </h1>
           <p className="text-[#91A4B7] mt-1">Bem-vindo(a) de volta, {profile?.name || 'Visitante'}</p>
         </div>
@@ -137,7 +145,7 @@ export default function Dashboard() {
 
       {/* POPUP DE RENOVAÇÃO */}
       {showRenewalPopup && !needsActivation && (
-        <div className="fixed bottom-8 right-8 z-50 bg-[#0E1B2B] border border-yellow-500 shadow-2xl shadow-yellow-500/20 p-6 rounded-2xl w-80 animate-bounce-short">
+        <div className="fixed bottom-8 right-8 z-50 bg-[var(--panel-color)] border border-yellow-500 shadow-2xl shadow-yellow-500/20 p-6 rounded-2xl w-80 animate-bounce-short">
           <h3 className="text-yellow-500 font-bold text-lg mb-2">Mensalidade Vencendo!</h3>
           {isExpired ? (
             <p className="text-sm text-[#91A4B7] mb-4">Sua assinatura venceu. Você está Inativo e pode perder comissões! Renove agora.</p>
@@ -145,8 +153,8 @@ export default function Dashboard() {
             <p className="text-sm text-[#91A4B7] mb-4">Sua assinatura vence em <strong className="text-white">{daysLeft} dias</strong>. Antecipe a renovação para não perder comissões!</p>
           )}
           <div className="flex gap-2">
-            <button onClick={() => setShowRenewalPopup(false)} className="flex-1 px-4 py-2 bg-[#07111F] text-[#91A4B7] rounded-lg text-sm font-bold hover:text-white">Fechar</button>
-            <button onClick={handleRenew} disabled={isProcessing} className="flex-1 px-4 py-2 bg-yellow-500 text-[#07111F] rounded-lg text-sm font-bold hover:bg-yellow-400 disabled:opacity-50">Renovar</button>
+            <button onClick={() => setShowRenewalPopup(false)} className="flex-1 px-4 py-2 bg-[var(--bg-color)] text-[#91A4B7] rounded-lg text-sm font-bold hover:text-white">Fechar</button>
+            <button onClick={handleRenew} disabled={isProcessing} className="flex-1 px-4 py-2 bg-yellow-500 text-[var(--bg-color)] rounded-lg text-sm font-bold hover:bg-yellow-400 disabled:opacity-50">Renovar</button>
           </div>
         </div>
       )}
@@ -164,13 +172,13 @@ export default function Dashboard() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg">
+        <div className="bg-[var(--panel-color)] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg">
           <h3 className="text-[#91A4B7] mb-2 font-semibold">Total de Milhas</h3>
           <p className="text-4xl font-bold text-[#00E89D]">{profile?.total_miles || 0}</p>
           <p className="text-sm mt-2 text-[#91A4B7]">Acumuladas até o momento</p>
         </div>
         
-        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg flex flex-col justify-between">
+        <div className="bg-[var(--panel-color)] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg flex flex-col justify-between">
           {!showQR ? (
             <>
               <div>
@@ -180,7 +188,7 @@ export default function Dashboard() {
                     Link bloqueado. Pague a ativação acima para liberar.
                   </p>
                 ) : (
-                  <p className="text-lg font-mono text-[var(--primary-color)] bg-[#07111F] p-2 rounded-lg truncate mt-2">
+                  <p className="text-lg font-mono text-[var(--primary-color)] bg-[var(--bg-color)] p-2 rounded-lg truncate mt-2">
                     {referralLink || 'Link indisponível'}
                   </p>
                 )}
@@ -189,14 +197,14 @@ export default function Dashboard() {
                 <button 
                   onClick={() => navigator.clipboard.writeText(referralLink)}
                   disabled={needsActivation}
-                  className="flex-1 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[#07111F] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[var(--bg-color)] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Copiar
                 </button>
                 <button 
                   onClick={() => setShowQR(true)}
                   disabled={needsActivation}
-                  className="flex-1 bg-[#0E1B2B] border border-[var(--primary-color)] hover:bg-[var(--primary-color)]/20 text-[var(--primary-color)] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-[var(--panel-color)] border border-[var(--primary-color)] hover:bg-[var(--primary-color)]/20 text-[var(--primary-color)] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   QR Code
                 </button>
@@ -209,7 +217,7 @@ export default function Dashboard() {
               </div>
               <button 
                 onClick={() => setShowQR(false)}
-                className="w-full bg-[#0E1B2B] border border-[#91A4B7] text-[#91A4B7] hover:text-white hover:border-white py-1 rounded transition-colors text-sm"
+                className="w-full bg-[var(--panel-color)] border border-[#91A4B7] text-[#91A4B7] hover:text-white hover:border-white py-1 rounded transition-colors text-sm"
               >
                 Voltar
               </button>
@@ -217,13 +225,13 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg">
+        <div className="bg-[var(--panel-color)] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg">
           <h3 className="text-[#91A4B7] mb-2 font-semibold">Matriz Atual: #{matrix?.matrix_number ? String(matrix.matrix_number).padStart(3, '0') : '---'}</h3>
           <div className="flex justify-between items-end mb-2">
             <p className="text-3xl font-bold text-white">{totalMembers} <span className="text-lg text-[#91A4B7]">/ {capacity}</span></p>
             <p className="text-[var(--secondary-color)] font-bold">{percentage}%</p>
           </div>
-          <div className="w-full bg-[#07111F] rounded-full h-3 mb-4 overflow-hidden">
+          <div className="w-full bg-[var(--bg-color)] rounded-full h-3 mb-4 overflow-hidden">
             <div className="bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] h-3 rounded-full" style={{ width: `${percentage}%` }}></div>
           </div>
           <div className="flex justify-between text-xs text-[#91A4B7]">
@@ -232,14 +240,14 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="bg-[#0E1B2B] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
+      <div className="bg-[var(--panel-color)] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
         <div className="p-6 border-b border-[#91A4B7]/20">
           <h2 className="text-lg font-bold text-white">Últimas Movimentações</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#07111F]/50 border-b border-[#91A4B7]/20 text-sm">
+              <tr className="bg-[var(--bg-color)]/50 border-b border-[#91A4B7]/20 text-sm">
                 <th className="p-4 font-bold text-[#91A4B7]">Data</th>
                 <th className="p-4 font-bold text-[#91A4B7]">Tipo</th>
                 <th className="p-4 font-bold text-[#91A4B7]">Status</th>
@@ -252,7 +260,7 @@ export default function Dashboard() {
               ) : recentActivity.map((item, idx) => {
                 const isAprovado = !item.status || item.status === 'APPROVED';
                 return (
-                  <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 transition-colors">
+                  <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[var(--bg-color)]/50 transition-colors">
                     <td className="p-4 text-sm text-[#91A4B7]">{new Date(item.created_at).toLocaleDateString('pt-BR')}</td>
                     <td className="p-4 text-sm font-medium">{item.description}</td>
                     <td className="p-4 text-sm font-bold">

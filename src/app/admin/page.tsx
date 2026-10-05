@@ -193,15 +193,15 @@ export default function PainelAdmin() {
     loadAdminData();
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-[#07111F] text-[var(--primary-color)] flex justify-center items-center">Carregando painel...</div>;
+  if (loading) return <div className="min-h-screen bg-[var(--bg-color)] text-[var(--primary-color)] flex justify-center items-center">Carregando painel...</div>;
   if (!hasAccess) return (
-    <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8 flex justify-center items-center">
-      <div className="bg-[#0E1B2B] p-8 rounded-2xl border border-red-500/20 text-center"><h2 className="text-2xl font-bold text-red-500">Acesso Negado</h2></div>
+    <div className="min-h-screen bg-[var(--bg-color)] text-[#F4F7FA] p-8 flex justify-center items-center">
+      <div className="bg-[var(--panel-color)] p-8 rounded-2xl border border-red-500/20 text-center"><h2 className="text-2xl font-bold text-red-500">Acesso Negado</h2></div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
+    <div className="min-h-screen bg-[var(--bg-color)] text-[#F4F7FA] p-8">
       <h1 className="text-2xl font-bold mb-2 text-red-500">
         {role === 'SUPER_ADMIN' ? 'Painel Super Admin (Plataforma)' : 'Painel Admin (Sua Rede)'}
       </h1>
@@ -211,28 +211,28 @@ export default function PainelAdmin() {
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         {role === 'SUPER_ADMIN' && (
-          <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-purple-500/40 shadow-lg">
+          <div className="bg-[var(--panel-color)] p-6 rounded-2xl border border-purple-500/40 shadow-lg">
             <p className="text-sm text-purple-400 mb-2 font-bold">Empresas Clientes (Admins)</p>
             <p className="text-4xl font-bold text-white">{stats.totalAdmins}</p>
           </div>
         )}
-        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-red-500/20 shadow-lg">
+        <div className="bg-[var(--panel-color)] p-6 rounded-2xl border border-red-500/20 shadow-lg">
           <p className="text-sm text-[#91A4B7] mb-2 font-bold">{role === 'SUPER_ADMIN' ? 'Total Global de Usuários' : 'Membros da sua Rede'}</p>
           <p className="text-4xl font-bold text-white mb-1">{stats.totalUsers.toLocaleString('pt-BR')}</p>
           <p className="text-xs text-[#00E89D]">+{stats.usersToday} hoje</p>
         </div>
-        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg flex flex-col justify-center">
+        <div className="bg-[var(--panel-color)] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg flex flex-col justify-center">
           <p className="text-sm text-[#91A4B7] mb-2 font-bold">Matrizes Ativas</p>
           <p className="text-3xl font-bold text-white">{stats.activeMatrices.toLocaleString('pt-BR')}</p>
         </div>
-        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg flex flex-col justify-center">
+        <div className="bg-[var(--panel-color)] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg flex flex-col justify-center">
           <p className="text-sm text-[#91A4B7] mb-2 font-bold">Milhas Processadas</p>
           <p className="text-3xl font-bold text-[#00E89D]">{stats.totalMiles.toLocaleString('pt-BR')}</p>
         </div>
       </div>
 
       {role === 'SUPER_ADMIN' && (
-        <div className="bg-[#0E1B2B] rounded-2xl border border-purple-500/20 shadow-lg overflow-hidden mb-8">
+        <div className="bg-[var(--panel-color)] rounded-2xl border border-purple-500/20 shadow-lg overflow-hidden mb-8">
           <div className="p-6 border-b border-[#91A4B7]/20 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
               <h2 className="text-lg font-bold text-purple-400">Suas Empresas Clientes (Admins)</h2>
@@ -240,7 +240,7 @@ export default function PainelAdmin() {
             </div>
             
             <div className="flex items-center gap-4">
-              <div className="flex items-center bg-[#07111F] rounded border border-[#91A4B7]/30">
+              <div className="flex items-center bg-[var(--bg-color)] rounded border border-[#91A4B7]/30">
                 <input 
                   type="number" 
                   value={saasFee} 
@@ -270,7 +270,7 @@ export default function PainelAdmin() {
               <tbody>
                 {tenantsList.length === 0 && (<tr><td colSpan={3} className="p-8 text-center text-[#91A4B7]">Nenhuma empresa cadastrada.</td></tr>)}
                 {tenantsList.map((item, idx) => (
-                  <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 text-sm">
+                  <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[var(--bg-color)]/50 text-sm">
                     <td className="p-4 font-bold text-white">{item.name}</td>
                     <td className="p-4 text-[#91A4B7]">{item.email}</td>
                     <td className="p-4 text-[#91A4B7]">{new Date(item.created_at).toLocaleDateString('pt-BR')}</td>
@@ -283,7 +283,7 @@ export default function PainelAdmin() {
       )}
 
       {/* Mesas de Aprovação (Visíveis para SUPER_ADMIN testando ou ADMIN real) */}
-      <div className="bg-[#0E1B2B] rounded-2xl border border-[var(--primary-color)]/20 shadow-lg overflow-hidden mb-8">
+      <div className="bg-[var(--panel-color)] rounded-2xl border border-[var(--primary-color)]/20 shadow-lg overflow-hidden mb-8">
         <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
           <h2 className="text-lg font-bold text-[var(--primary-color)]">Pedidos de Saque (Resgate de Milhas)</h2>
         </div>
@@ -301,13 +301,13 @@ export default function PainelAdmin() {
             <tbody>
               {withdrawals.length === 0 && (<tr><td colSpan={5} className="p-8 text-center text-[#91A4B7]">Nenhum saque pendente.</td></tr>)}
               {withdrawals.map((item, idx) => (
-                <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 text-sm">
+                <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[var(--bg-color)]/50 text-sm">
                   <td className="p-4 text-[#91A4B7]">{item.date}</td>
                   <td className="p-4 font-bold text-white">{item.userName}</td>
                   <td className="p-4 text-yellow-500 font-mono">{item.pix_key || 'Não informada'}</td>
                   <td className="p-4 font-black text-[var(--primary-color)] text-right">{item.amount_miles}</td>
                   <td className="p-4 flex justify-center gap-2">
-                    <button onClick={() => handleApproveWithdraw(item.id)} className="bg-[#00E89D] text-[#07111F] px-4 py-1 rounded font-bold hover:bg-[#00C585] transition-colors">Aprovar</button>
+                    <button onClick={() => handleApproveWithdraw(item.id)} className="bg-[#00E89D] text-[var(--bg-color)] px-4 py-1 rounded font-bold hover:bg-[#00C585] transition-colors">Aprovar</button>
                     <button onClick={() => handleRejectWithdraw(item.id, item.user_id, item.amount_miles)} className="bg-red-500 text-white px-4 py-1 rounded font-bold hover:bg-red-600 transition-colors">Recusar (Estorno)</button>
                   </td>
                 </tr>
@@ -317,7 +317,7 @@ export default function PainelAdmin() {
         </div>
       </div>
 
-      <div className="bg-[#0E1B2B] rounded-2xl border border-yellow-500/20 shadow-lg overflow-hidden mb-8">
+      <div className="bg-[var(--panel-color)] rounded-2xl border border-yellow-500/20 shadow-lg overflow-hidden mb-8">
         <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
           <h2 className="text-lg font-bold text-yellow-500">Pagamentos Pendentes (Ativações)</h2>
         </div>
@@ -333,7 +333,7 @@ export default function PainelAdmin() {
             <tbody>
               {pending.length === 0 && (<tr><td colSpan={3} className="p-8 text-center text-[#91A4B7]">Nenhuma ativação pendente.</td></tr>)}
               {pending.map((item, idx) => (
-                <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 text-sm">
+                <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[var(--bg-color)]/50 text-sm">
                   <td className="p-4 text-[#91A4B7]">{item.date}</td>
                   <td className="p-4 font-bold text-white">{item.payerName}</td>
                   <td className="p-4">
@@ -347,7 +347,7 @@ export default function PainelAdmin() {
       </div>
 
       {/* Extrato Global Financeiro */}
-      <div className="bg-[#0E1B2B] rounded-2xl border border-gray-500/20 shadow-lg overflow-hidden mb-8">
+      <div className="bg-[var(--panel-color)] rounded-2xl border border-gray-500/20 shadow-lg overflow-hidden mb-8">
         <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
           <h2 className="text-lg font-bold text-gray-300">Extrato Global de Transações</h2>
         </div>
@@ -364,7 +364,7 @@ export default function PainelAdmin() {
             <tbody>
               {audit.length === 0 && (<tr><td colSpan={4} className="p-8 text-center text-[#91A4B7]">Nenhuma transação registrada.</td></tr>)}
               {audit.map((item, idx) => (
-                <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 text-sm">
+                <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[var(--bg-color)]/50 text-sm">
                   <td className="p-4 text-[#91A4B7]">{item.date}</td>
                   <td className="p-4 font-medium text-white">{item.action}</td>
                   <td className="p-4 text-[#91A4B7]">{item.target}</td>

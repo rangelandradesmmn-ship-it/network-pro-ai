@@ -84,14 +84,14 @@ function CadastroForm() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-[#07111F]">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-[var(--bg-color)]">
       <Link href="/">
         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] mb-8">
           NETWORK PRO AI
         </h1>
       </Link>
       
-      <div className="w-full max-w-md bg-[#0E1B2B] p-8 rounded-2xl border border-[#91A4B7]/20 shadow-2xl">
+      <div className="w-full max-w-md bg-[var(--panel-color)] p-8 rounded-2xl border border-[#91A4B7]/20 shadow-2xl">
         <h2 className="text-2xl font-bold text-white mb-6">Criar Conta</h2>
         
         {sponsorCode && (
@@ -109,36 +109,36 @@ function CadastroForm() {
         <form className="space-y-4" onSubmit={handleCadastro}>
           <div>
             <label className="block text-sm font-medium text-[#91A4B7] mb-1">Nome Completo</label>
-            <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="Ex: João da Silva" />
+            <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full bg-[var(--bg-color)] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="Ex: João da Silva" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#91A4B7] mb-1">E-mail</label>
-            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="joao@exemplo.com" />
+            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[var(--bg-color)] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="joao@exemplo.com" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#91A4B7] mb-1">WhatsApp</label>
-            <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="(11) 99999-9999" />
+            <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-[var(--bg-color)] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="(11) 99999-9999" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#91A4B7] mb-1">Código do Patrocinador</label>
-            <input type="text" required value={sponsorCode} onChange={e => setSponsorCode(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="Ex: NP123456" />
+            <input type="text" required value={sponsorCode} onChange={e => setSponsorCode(e.target.value)} className="w-full bg-[var(--bg-color)] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" placeholder="Ex: NP123456" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#91A4B7] mb-1">Senha</label>
-              <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" />
+              <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[var(--bg-color)] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#91A4B7] mb-1">Confirmar Senha</label>
-              <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" />
+              <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-[var(--bg-color)] border border-[#91A4B7]/30 rounded-lg p-3 text-white focus:border-[var(--primary-color)] focus:outline-none transition-colors" />
             </div>
           </div>
 
-          <button type="submit" disabled={loading} className="w-full py-4 mt-6 bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] hover:from-[var(--secondary-color)] hover:to-[#00E89D] text-[#07111F] font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(0,174,239,0.3)] disabled:opacity-50">
+          <button type="submit" disabled={loading} className="w-full py-4 mt-6 bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] hover:from-[var(--secondary-color)] hover:to-[#00E89D] text-[var(--bg-color)] font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(0,174,239,0.3)] disabled:opacity-50">
             {loading ? 'PROCESSANDO...' : 'FINALIZAR CADASTRO'}
           </button>
         </form>
@@ -153,7 +153,7 @@ function CadastroForm() {
 
 export default function Cadastro() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#07111F] flex items-center justify-center text-[var(--primary-color)]">Carregando...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[var(--bg-color)] flex items-center justify-center text-[var(--primary-color)]">Carregando...</div>}>
       <CadastroForm />
     </Suspense>
   );

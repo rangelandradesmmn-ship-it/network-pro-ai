@@ -39,7 +39,7 @@ export default function MinhasMatrizes() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
+    <div className="min-h-screen bg-[var(--bg-color)] text-[#F4F7FA] p-8">
       <h1 className="text-2xl font-bold mb-6 text-[var(--primary-color)]">Histórico de Matrizes</h1>
       
       <p className="text-[#91A4B7] mb-8 max-w-2xl">
@@ -57,7 +57,7 @@ export default function MinhasMatrizes() {
             const percent = Math.round((matriz.total_members / matriz.capacity) * 100);
             
             return (
-              <div key={matriz.id} className={`bg-[#0E1B2B] p-6 rounded-2xl border shadow-lg relative ${isCurrent ? 'border-[var(--primary-color)]' : 'border-[#91A4B7]/20'}`}>
+              <div key={matriz.id} className={`bg-[var(--panel-color)] p-6 rounded-2xl border shadow-lg relative ${isCurrent ? 'border-[var(--primary-color)]' : 'border-[#91A4B7]/20'}`}>
                 {isCurrent && (
                   <span className="absolute top-4 right-4 bg-[var(--primary-color)]/20 text-[var(--primary-color)] text-xs font-bold px-2 py-1 rounded">ATUAL</span>
                 )}
@@ -72,7 +72,7 @@ export default function MinhasMatrizes() {
                   <p className="text-sm font-bold">{percent}%</p>
                 </div>
                 
-                <div className="w-full bg-[#07111F] rounded-full h-2 mb-4 overflow-hidden">
+                <div className="w-full bg-[var(--bg-color)] rounded-full h-2 mb-4 overflow-hidden">
                   <div 
                     className={`h-2 rounded-full ${matriz.status === 'COMPLETED' ? 'bg-[#00E89D]' : 'bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)]'}`}
                     style={{ width: `${percent}%` }}
@@ -82,7 +82,7 @@ export default function MinhasMatrizes() {
                 <p className="text-xs text-[#91A4B7] mb-4">Criada em: {new Date(matriz.created_at).toLocaleDateString('pt-BR')}</p>
 
                 <Link href="/minha-rede">
-                  <button className="w-full py-2 bg-[#07111F] border border-[#91A4B7]/30 hover:bg-[var(--primary-color)]/10 hover:border-[var(--primary-color)]/50 transition-colors rounded-lg text-sm font-semibold">
+                  <button className="w-full py-2 bg-[var(--bg-color)] border border-[#91A4B7]/30 hover:bg-[var(--primary-color)]/10 hover:border-[var(--primary-color)]/50 transition-colors rounded-lg text-sm font-semibold">
                     Visualizar Estrutura
                   </button>
                 </Link>

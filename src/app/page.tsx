@@ -15,7 +15,7 @@ export default function Home() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/cadastro">
-            <button className="w-full sm:w-auto px-8 py-4 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[#07111F] font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(0,174,239,0.4)] transition-all transform hover:scale-105">
+            <button className="w-full sm:w-auto px-8 py-4 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[var(--bg-color)] font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(0,174,239,0.4)] transition-all transform hover:scale-105">
               CRIAR CONTA
             </button>
           </Link>

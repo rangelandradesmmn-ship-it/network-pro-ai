@@ -43,16 +43,16 @@ export default function RankingView() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
+    <div className="min-h-screen bg-[var(--bg-color)] text-[#F4F7FA] p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-[var(--primary-color)]">Ranking Global</h1>
-        <select className="bg-[#0E1B2B] border border-[#91A4B7]/30 text-white rounded p-2 text-sm">
+        <select className="bg-[var(--panel-color)] border border-[#91A4B7]/30 text-white rounded p-2 text-sm">
           <option>Mês Atual</option>
           <option>Todos os Tempos</option>
         </select>
       </div>
       
-      <div className="bg-[#0E1B2B] rounded-2xl border border-[#91A4B7]/20 shadow-lg p-6">
+      <div className="bg-[var(--panel-color)] rounded-2xl border border-[#91A4B7]/20 shadow-lg p-6">
         {loading ? (
           <div className="text-center text-[var(--primary-color)] py-8">Carregando melhores líderes...</div>
         ) : ranking.length === 0 ? (
@@ -62,7 +62,7 @@ export default function RankingView() {
             {ranking.map((user, idx) => (
               <div 
                 key={user.user_id} 
-                className={`flex items-center justify-between p-4 rounded-xl border ${idx === 0 ? 'bg-[var(--primary-color)]/10 border-[var(--primary-color)]/30' : idx === 1 ? 'bg-[#00E89D]/10 border-[#00E89D]/30' : 'bg-[#07111F] border-[#91A4B7]/10'} hover:scale-[1.01] transition-transform`}
+                className={`flex items-center justify-between p-4 rounded-xl border ${idx === 0 ? 'bg-[var(--primary-color)]/10 border-[var(--primary-color)]/30' : idx === 1 ? 'bg-[#00E89D]/10 border-[#00E89D]/30' : 'bg-[var(--bg-color)] border-[#91A4B7]/10'} hover:scale-[1.01] transition-transform`}
               >
                 <div className="flex items-center gap-6">
                   <span className={`text-2xl font-black w-8 text-center ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-amber-600' : 'text-[#91A4B7]'}`}>
@@ -73,7 +73,7 @@ export default function RankingView() {
                     <img 
                       src={user.avatar_url || `https://i.pravatar.cc/150?u=${idx}`} 
                       alt="avatar" 
-                      className="w-12 h-12 rounded-full border-2 border-[#0E1B2B] object-cover" 
+                      className="w-12 h-12 rounded-full border-2 border-[var(--panel-color)] object-cover" 
                     />
                     <div>
                       <h3 className="font-bold text-lg">{user.name}</h3>
