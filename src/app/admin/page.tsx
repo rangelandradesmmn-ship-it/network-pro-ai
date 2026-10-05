@@ -98,7 +98,7 @@ export default function PainelAdmin() {
 
         // Fetch Miles
         const { data: milesData } = await tFilter(supabase.from('financial_ledger').select('amount_miles'));
-        const totalMiles = milesData ? milesData.reduce((acc, curr) => acc + curr.amount_miles, 0) : 0;
+        const totalMiles = milesData ? milesData.reduce((acc: number, curr: any) => acc + curr.amount_miles, 0) : 0;
 
         let totalAdmins = 0;
         if (isSuper) {
@@ -114,7 +114,7 @@ export default function PainelAdmin() {
         // Load Tables for Admin & Super Admin
         const { data: ledgerData } = await tFilter(supabase.from('financial_ledger').select(`id, created_at, description, amount_miles, profiles!financial_ledger_user_id_fkey (name, referral_code)`).order('created_at', { ascending: false }).limit(10));
         if (ledgerData) {
-          setAudit(ledgerData.map(item => ({
+          setAudit(ledgerData.map((item: any) => ({
             date: new Date(item.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
             action: item.description, admin: 'Sistema', target: (item.profiles as any)?.referral_code || '---', details: `+${item.amount_miles} Milhas processadas`
           })));
@@ -123,8 +123,8 @@ export default function PainelAdmin() {
         // Fetch pending payments
         const { data: pendingData } = await tFilter(supabase.from('financial_ledger').select('created_at, from_user_id, profiles!financial_ledger_from_user_id_fkey(name)').eq('status', 'PENDING'));
         if (pendingData) {
-          const uniquePending = Array.from(new Set(pendingData.map(p => p.from_user_id))).map(uid => {
-            const row = pendingData.find(p => p.from_user_id === uid);
+          const uniquePending = Array.from(new Set(pendingData.map((p: any) => p.from_user_id))).map(uid => {
+            const row = pendingData.find((p: any) => p.from_user_id === uid);
             return { from_user_id: uid, date: new Date(row!.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }), payerName: (row?.profiles as any)?.name || 'Usuário' };
           });
           setPending(uniquePending);
@@ -133,7 +133,7 @@ export default function PainelAdmin() {
         // Fetch withdrawals
         const { data: wData } = await tFilter(supabase.from('withdrawals').select('id, amount_miles, created_at, user_id, profiles!withdrawals_user_id_fkey(name)').eq('status', 'PENDING').order('created_at', { ascending: false }));
         if (wData) {
-          setWithdrawals(wData.map(w => ({
+          setWithdrawals(wData.map((w: any) => ({
             id: w.id, user_id: w.user_id, amount_miles: w.amount_miles,
             date: new Date(w.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }), userName: (w.profiles as any)?.name || 'Usuário'
           })));
