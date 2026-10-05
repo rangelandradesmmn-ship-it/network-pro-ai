@@ -11,6 +11,8 @@ export default function Dashboard() {
   const [needsActivation, setNeedsActivation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [daysLeft, setDaysLeft] = useState<number | null>(null);
+  const [showRenewalPopup, setShowRenewalPopup] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -25,6 +27,18 @@ export default function Dashboard() {
 
         if (profileData) {
           setProfile({ ...profileData, total_miles: realMiles });
+          
+          if (profileData.active_until) {
+            const diffTime = new Date(profileData.active_until).getTime() - new Date().getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            setDaysLeft(diffDays);
+            if (diffDays <= 3) {
+              setShowRenewalPopup(true);
+            }
+          } else {
+             // Nunca ativado (ou sistema legado)
+             setDaysLeft(0);
+          }
         }
 
         // Buscar ultimas movimentacoes
@@ -45,6 +59,7 @@ export default function Dashboard() {
           
         if (pendingCount && pendingCount > 0) {
           setNeedsActivation(true);
+          setShowRenewalPopup(false); // Já está pagando
         }
 
         // Buscar matriz ativa
@@ -70,28 +85,17 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  const handleCheckout = async () => {
+  const handleRenew = async () => {
     setIsProcessing(true);
     try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: profile?.id,
-          userEmail: profile?.email,
-          userName: profile?.name,
-          tenantId: profile?.tenant_id
-        }),
-      });
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Erro ao iniciar pagamento: ' + data.error);
-        setIsProcessing(false);
-      }
+      await supabase.rpc('generate_renewal_commissions', { p_user_id: profile.id });
+      setNeedsActivation(true);
+      setShowRenewalPopup(false);
+      alert('Pedido de renovação gerado! Pague sua ativação para continuar ganhando milhas.');
     } catch (e) {
       console.error(e);
+      alert('Erro ao gerar renovação.');
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -105,8 +109,10 @@ export default function Dashboard() {
   const capacity = matrix ? matrix.capacity : 155;
   const percentage = Math.round((totalMembers / capacity) * 100);
 
+  const isExpired = daysLeft !== null && daysLeft < 0;
+
   return (
-    <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
+    <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8 relative">
       <header className="flex justify-between items-center mb-10">
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00AEEF] to-[#00E5FF]">
@@ -117,13 +123,32 @@ export default function Dashboard() {
         <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="text-sm text-[#91A4B7]">ID: {profile?.referral_code || '---'}</p>
-            <p className={`font-bold ${needsActivation ? 'text-yellow-500' : 'text-[#00E89D]'}`}>
-              Status: {needsActivation ? 'Pendente' : (profile?.status || 'Ativo')}
+            <p className={`font-bold ${needsActivation || isExpired ? 'text-yellow-500' : 'text-[#00E89D]'}`}>
+              Status: {needsActivation ? 'Pendente' : (isExpired ? 'Inativo (Vencido)' : 'Ativo')}
             </p>
+            {profile?.active_until && (
+              <p className="text-[10px] text-[#91A4B7]">Vence: {new Date(profile.active_until).toLocaleDateString('pt-BR')}</p>
+            )}
           </div>
           <img src={profile?.avatar_url || "https://i.pravatar.cc/150?u=admin"} alt="Perfil" className="w-12 h-12 rounded-full border-2 border-[#00AEEF]" />
         </div>
       </header>
+
+      {/* POPUP DE RENOVAÇÃO */}
+      {showRenewalPopup && !needsActivation && (
+        <div className="fixed bottom-8 right-8 z-50 bg-[#0E1B2B] border border-yellow-500 shadow-2xl shadow-yellow-500/20 p-6 rounded-2xl w-80 animate-bounce-short">
+          <h3 className="text-yellow-500 font-bold text-lg mb-2">Mensalidade Vencendo!</h3>
+          {isExpired ? (
+            <p className="text-sm text-[#91A4B7] mb-4">Sua assinatura venceu. Você está Inativo e pode perder comissões! Renove agora.</p>
+          ) : (
+            <p className="text-sm text-[#91A4B7] mb-4">Sua assinatura vence em <strong className="text-white">{daysLeft} dias</strong>. Antecipe a renovação para não perder comissões!</p>
+          )}
+          <div className="flex gap-2">
+            <button onClick={() => setShowRenewalPopup(false)} className="flex-1 px-4 py-2 bg-[#07111F] text-[#91A4B7] rounded-lg text-sm font-bold hover:text-white">Fechar</button>
+            <button onClick={handleRenew} disabled={isProcessing} className="flex-1 px-4 py-2 bg-yellow-500 text-[#07111F] rounded-lg text-sm font-bold hover:bg-yellow-400 disabled:opacity-50">Renovar</button>
+          </div>
+        </div>
+      )}
 
       {needsActivation && (
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-8 flex justify-between items-center shadow-lg shadow-yellow-500/5">

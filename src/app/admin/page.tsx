@@ -75,10 +75,13 @@ export default function PainelAdmin() {
 
   const handleApprove = async (fromUserId: string) => {
     try {
-      const { error } = await supabase.from('financial_ledger').update({ status: 'APPROVED' }).eq('from_user_id', fromUserId);
+      const { error } = await supabase.from('financial_ledger').update({ status: 'APPROVED' }).eq('from_user_id', fromUserId).eq('status', 'PENDING');
       if (!error) {
+        // Atualiza os dias de atividade do usuário (30 dias)
+        await supabase.rpc('renew_user_subscription', { p_user_id: fromUserId, p_days: 30 });
+        
         setPending(prev => prev.filter(p => p.from_user_id !== fromUserId));
-        alert('Pagamento aprovado e comissões distribuídas na rede!');
+        alert('Pagamento aprovado, comissões distribuídas e mensalidade renovada!');
       }
     } catch (e) { console.error(e); }
   };
