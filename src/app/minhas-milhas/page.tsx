@@ -7,48 +7,92 @@ export default function ExtratoMilhas() {
   const [extrato, setExtrato] = useState<any[]>([]);
   const [totalAprovado, setTotalAprovado] = useState(0);
   const [totalPendente, setTotalPendente] = useState(0);
+  
+  // Modal de Saque
+  const [showModal, setShowModal] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState<number | ''>('');
+  const [userId, setUserId] = useState<string>('');
+
+  async function loadMilhas() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setUserId(user.id);
+
+      const { data } = await supabase
+        .from('financial_ledger')
+        .select(`
+          id, created_at, description, amount_miles, level_earned, status,
+          profiles!financial_ledger_from_user_id_fkey (name, referral_code)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (data) {
+        const formatado = data.map(item => ({
+          id: item.id,
+          date: new Date(item.created_at).toLocaleDateString('pt-BR'),
+          origem: (item.profiles as any)?.name || 'Sistema',
+          tipo: item.description,
+          pontos: item.amount_miles,
+          nivel: item.level_earned,
+          status: item.status || 'APPROVED'
+        }));
+        setExtrato(formatado);
+
+        const aprovado = data.filter(i => !i.status || i.status === 'APPROVED').reduce((acc, cur) => acc + cur.amount_miles, 0);
+        const pendente = data.filter(i => i.status === 'PENDING').reduce((acc, cur) => acc + cur.amount_miles, 0);
+        
+        setTotalAprovado(aprovado);
+        setTotalPendente(pendente);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar milhas", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function loadMilhas() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data } = await supabase
-          .from('financial_ledger')
-          .select(`
-            id, created_at, description, amount_miles, level_earned, status,
-            profiles!financial_ledger_from_user_id_fkey (name, referral_code)
-          `)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (data) {
-          const formatado = data.map(item => ({
-            id: item.id,
-            date: new Date(item.created_at).toLocaleDateString('pt-BR'),
-            origem: (item.profiles as any)?.name || 'Sistema',
-            tipo: item.description,
-            pontos: item.amount_miles,
-            nivel: item.level_earned,
-            status: item.status || 'APPROVED'
-          }));
-          setExtrato(formatado);
-
-          const aprovado = data.filter(i => !i.status || i.status === 'APPROVED').reduce((acc, cur) => acc + cur.amount_miles, 0);
-          const pendente = data.filter(i => i.status === 'PENDING').reduce((acc, cur) => acc + cur.amount_miles, 0);
-          
-          setTotalAprovado(aprovado);
-          setTotalPendente(pendente);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar milhas", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadMilhas();
   }, []);
+
+  const handleWithdraw = async () => {
+    const amount = Number(withdrawAmount);
+    if (amount <= 0 || amount > totalAprovado) {
+      alert('Valor inválido ou saldo insuficiente.');
+      return;
+    }
+    
+    try {
+      // 1. Registra o pedido de saque
+      const { error: wError } = await supabase.from('withdrawals').insert({
+        user_id: userId,
+        amount_miles: amount,
+        status: 'PENDING'
+      });
+      if (wError) throw wError;
+
+      // 2. Debita as milhas do saldo imediatamente (como APPROVED para subtrair)
+      const { error: lError } = await supabase.from('financial_ledger').insert({
+        user_id: userId,
+        from_user_id: userId,
+        amount_miles: -amount,
+        description: 'Solicitação de Saque',
+        status: 'APPROVED',
+        level_earned: 0
+      });
+      if (lError) throw lError;
+
+      alert('Saque solicitado com sucesso! Aguarde a aprovação do Admin.');
+      setShowModal(false);
+      setWithdrawAmount('');
+      loadMilhas(); // Recarrega os dados
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao solicitar saque.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
@@ -70,6 +114,12 @@ export default function ExtratoMilhas() {
       <div className="bg-[#0E1B2B] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
         <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
           <h2 className="text-lg font-bold">Extrato Detalhado</h2>
+          <button 
+            onClick={() => setShowModal(true)}
+            className="text-sm bg-[#00AEEF] text-white px-4 py-2 rounded font-bold hover:bg-[#0091C7] transition-colors shadow-[0_0_15px_rgba(0,174,239,0.4)]"
+          >
+            Resgatar Milhas
+          </button>
         </div>
         <div className="overflow-x-auto">
           {loading ? (
@@ -102,8 +152,8 @@ export default function ExtratoMilhas() {
                         <span className="text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded">Pendente</span>
                       )}
                     </td>
-                    <td className={`p-4 font-bold text-right ${item.status === 'APPROVED' ? 'text-[#00E89D]' : 'text-yellow-500'}`}>
-                      +{item.pontos}
+                    <td className={`p-4 font-bold text-right ${item.pontos > 0 ? (item.status === 'APPROVED' ? 'text-[#00E89D]' : 'text-yellow-500') : 'text-red-500'}`}>
+                      {item.pontos > 0 ? '+' : ''}{item.pontos}
                     </td>
                   </tr>
                 ))}
@@ -112,6 +162,42 @@ export default function ExtratoMilhas() {
           )}
         </div>
       </div>
+
+      {/* Modal de Saque */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0E1B2B] border border-[#91A4B7]/20 p-8 rounded-2xl w-full max-w-md shadow-2xl">
+            <h3 className="text-xl font-bold text-white mb-2">Solicitar Resgate</h3>
+            <p className="text-sm text-[#91A4B7] mb-6">Saldo disponível: <strong className="text-[#00E89D]">{totalAprovado} Milhas</strong></p>
+            
+            <div className="mb-6">
+              <label className="block text-xs font-bold text-[#91A4B7] uppercase mb-2">Quantidade a resgatar</label>
+              <input 
+                type="number" 
+                value={withdrawAmount}
+                onChange={e => setWithdrawAmount(Number(e.target.value))}
+                className="w-full bg-[#07111F] border border-[#91A4B7]/30 rounded-lg p-3 text-white outline-none focus:border-[#00AEEF] transition-colors"
+                placeholder="Ex: 50"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded text-sm font-bold text-[#91A4B7] hover:bg-white/5 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleWithdraw}
+                className="px-4 py-2 rounded text-sm font-bold bg-[#00AEEF] text-white hover:bg-[#0091C7] transition-colors"
+              >
+                Confirmar Saque
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

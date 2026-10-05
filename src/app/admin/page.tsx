@@ -13,6 +13,7 @@ export default function PainelAdmin() {
   });
   const [audit, setAudit] = useState<any[]>([]);
   const [pending, setPending] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
 
   const handleApprove = async (fromUserId: string) => {
@@ -25,6 +26,36 @@ export default function PainelAdmin() {
         setPending(prev => prev.filter(p => p.from_user_id !== fromUserId));
         alert('Pagamento aprovado e comissões distribuídas na rede!');
       }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleApproveWithdraw = async (id: string) => {
+    try {
+      await supabase.from('withdrawals').update({ status: 'APPROVED' }).eq('id', id);
+      setWithdrawals(prev => prev.filter(w => w.id !== id));
+      alert('Saque aprovado com sucesso!');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRejectWithdraw = async (id: string, userId: string, amount: number) => {
+    try {
+      await supabase.from('withdrawals').update({ status: 'REJECTED' }).eq('id', id);
+      
+      await supabase.from('financial_ledger').insert({
+        user_id: userId,
+        from_user_id: userId,
+        amount_miles: amount,
+        description: 'Estorno: Saque Recusado',
+        status: 'APPROVED',
+        level_earned: 0
+      });
+
+      setWithdrawals(prev => prev.filter(w => w.id !== id));
+      alert('Saque recusado e milhas estornadas para o usuário!');
     } catch (e) {
       console.error(e);
     }
@@ -109,6 +140,24 @@ export default function PainelAdmin() {
           setPending(uniquePending);
         }
 
+        // Fetch pending withdrawals
+        const { data: wData } = await supabase
+          .from('withdrawals')
+          .select('id, amount_miles, created_at, user_id, profiles!withdrawals_user_id_fkey(name)')
+          .eq('status', 'PENDING')
+          .order('created_at', { ascending: false });
+          
+        if (wData) {
+          const wFormatted = wData.map(w => ({
+            id: w.id,
+            user_id: w.user_id,
+            amount_miles: w.amount_miles,
+            date: new Date(w.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
+            userName: (w.profiles as any)?.name || 'Usuário'
+          }));
+          setWithdrawals(wFormatted);
+        }
+
       } catch (error) {
         console.error("Erro ao carregar admin", error);
       } finally {
@@ -184,6 +233,52 @@ export default function PainelAdmin() {
                           className="bg-green-500 text-white px-4 py-1 rounded font-bold hover:bg-green-600 transition-colors"
                         >
                           Aprovar Matriz
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-[#0E1B2B] rounded-2xl border border-[#00AEEF]/20 shadow-lg overflow-hidden mb-8">
+            <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
+              <h2 className="text-lg font-bold text-[#00AEEF]">Pedidos de Saque (Resgate de Milhas)</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#00AEEF]/5 border-b border-[#91A4B7]/20 text-sm">
+                    <th className="p-4 font-bold text-[#00AEEF]">Data</th>
+                    <th className="p-4 font-bold text-[#00AEEF]">Usuário</th>
+                    <th className="p-4 font-bold text-[#00AEEF] text-right">Valor Solicitado</th>
+                    <th className="p-4 font-bold text-[#00AEEF] text-center">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {withdrawals.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-[#91A4B7]">Nenhum saque pendente.</td>
+                    </tr>
+                  )}
+                  {withdrawals.map((item, idx) => (
+                    <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 text-sm">
+                      <td className="p-4 text-[#91A4B7]">{item.date}</td>
+                      <td className="p-4 font-bold text-white">{item.userName}</td>
+                      <td className="p-4 font-black text-[#00AEEF] text-right">{item.amount_miles} Milhas</td>
+                      <td className="p-4 flex justify-center gap-2">
+                        <button 
+                          onClick={() => handleApproveWithdraw(item.id)}
+                          className="bg-[#00E89D] text-[#07111F] px-4 py-1 rounded font-bold hover:bg-[#00C585] transition-colors"
+                        >
+                          Aprovar
+                        </button>
+                        <button 
+                          onClick={() => handleRejectWithdraw(item.id, item.user_id, item.amount_miles)}
+                          className="bg-red-500 text-white px-4 py-1 rounded font-bold hover:bg-red-600 transition-colors"
+                        >
+                          Recusar (Estorno)
                         </button>
                       </td>
                     </tr>
