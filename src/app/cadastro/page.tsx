@@ -8,6 +8,7 @@ function CadastroForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [sponsorCode, setSponsorCode] = useState('');
+  const [companyName, setCompanyName] = useState('NETWORK PRO AI');
   
   // Form states
   const [name, setName] = useState('');
@@ -18,15 +19,40 @@ function CadastroForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  async function loadSponsorWhiteLabel(code: string) {
+    try {
+      const { data: sponsor } = await supabase.from('profiles').select('tenant_id').eq('referral_code', code).single();
+      if (sponsor?.tenant_id) {
+        const { data: settings } = await supabase.from('tenant_settings').select('*').eq('tenant_id', sponsor.tenant_id).single();
+        if (settings) {
+          document.documentElement.style.setProperty('--primary-color', settings.primary_color);
+          document.documentElement.style.setProperty('--secondary-color', settings.secondary_color);
+          if (settings.bg_color) document.documentElement.style.setProperty('--bg-color', settings.bg_color);
+          if (settings.panel_color) document.documentElement.style.setProperty('--panel-color', settings.panel_color);
+          if (settings.company_name) {
+            setCompanyName(settings.company_name.toUpperCase());
+            document.title = settings.company_name;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao carregar white label", e);
+    }
+  }
+
   // Handle ?ref= code from URL
   useEffect(() => {
     const ref = searchParams.get('ref');
     if (ref) {
       setSponsorCode(ref);
       localStorage.setItem('np_sponsor', ref);
+      loadSponsorWhiteLabel(ref);
     } else {
       const savedRef = localStorage.getItem('np_sponsor');
-      if (savedRef) setSponsorCode(savedRef);
+      if (savedRef) {
+        setSponsorCode(savedRef);
+        loadSponsorWhiteLabel(savedRef);
+      }
     }
   }, [searchParams]);
 
@@ -87,7 +113,7 @@ function CadastroForm() {
     <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-[var(--bg-color)]">
       <Link href="/">
         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] mb-8">
-          NETWORK PRO AI
+          {companyName}
         </h1>
       </Link>
       

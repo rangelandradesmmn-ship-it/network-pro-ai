@@ -6,7 +6,7 @@ DECLARE
     v_matrix_owner_id UUID;
     v_capacity INTEGER;
     v_total_members INTEGER;
-    v_rule_id UUID;
+    v_rule_id INTEGER;
     v_parent_id UUID;
     v_new_level INTEGER;
     v_current_parent UUID;
@@ -33,7 +33,9 @@ BEGIN
     FROM public.matrices WHERE owner_user_id = p_tenant_id AND status = 'ACTIVE' ORDER BY created_at DESC LIMIT 1;
 
     IF v_matrix_id IS NULL THEN
-        SELECT id INTO v_rule_id FROM public.matrix_rules WHERE is_active = true LIMIT 1;
+        SELECT id INTO v_rule_id FROM public.matrix_rule_versions ORDER BY id DESC LIMIT 1;
+        IF v_rule_id IS NULL THEN v_rule_id := 1; END IF;
+        
         INSERT INTO public.matrices (owner_user_id, matrix_number, capacity, rule_version_id)
         VALUES (p_tenant_id, 1, 155, v_rule_id) RETURNING id INTO v_matrix_id;
         v_matrix_owner_id := p_tenant_id;
@@ -45,16 +47,29 @@ BEGIN
         RETURN json_build_object('success', false, 'error', 'A matriz da empresa já está cheia (155 membros).');
     END IF;
 
-    v_parent_id := public.find_next_available_position(v_matrix_id, p_sponsor_id);
+    -- Lógica de Posicionamento (BFS - Esquerda para Direita)
+    SELECT coalesce(min(expected.index), 1) INTO v_total_members
+    FROM generate_series(1, 155) expected(index)
+    LEFT JOIN public.matrix_positions mp ON mp.matrix_id = v_matrix_id AND mp.position_index = expected.index
+    WHERE mp.user_id IS NULL; -- onde não tem registro
 
-    IF v_parent_id = p_sponsor_id THEN
+    -- Determina o Parent (Upline) e o Level baseado na posição
+    IF v_total_members <= 5 THEN
+        v_parent_id := p_sponsor_id;
         v_new_level := 1;
+    ELSIF v_total_members <= 30 THEN
+        SELECT user_id INTO v_parent_id FROM public.matrix_positions WHERE matrix_id = v_matrix_id AND position_index = ceil((v_total_members - 5) / 5.0);
+        v_new_level := 2;
     ELSE
-        SELECT level + 1 INTO v_new_level FROM public.matrix_positions WHERE matrix_id = v_matrix_id AND user_id = v_parent_id;
+        SELECT user_id INTO v_parent_id FROM public.matrix_positions WHERE matrix_id = v_matrix_id AND position_index = ceil((v_total_members - 5) / 5.0);
+        v_new_level := 3;
     END IF;
 
-    INSERT INTO public.matrix_positions (matrix_id, user_id, parent_user_id, level, position_index)
-    VALUES (v_matrix_id, p_new_user_id, v_parent_id, COALESCE(v_new_level, 1), v_total_members + 1);
+    -- Previne erro caso o Upliner não seja encontrado (fallback)
+    IF v_parent_id IS NULL THEN v_parent_id := p_sponsor_id; END IF;
+
+    INSERT INTO public.matrix_positions (matrix_id, user_id, parent_user_id, level, position_index, sponsor_id)
+    VALUES (v_matrix_id, p_new_user_id, v_parent_id, COALESCE(v_new_level, 1), v_total_members, p_sponsor_id);
 
     UPDATE public.matrices SET total_members = total_members + 1 WHERE id = v_matrix_id;
 
