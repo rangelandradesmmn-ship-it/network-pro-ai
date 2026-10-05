@@ -36,7 +36,7 @@ export default function MinhasIndicacoes() {
         const userIds = positions.map(p => p.user_id);
         const { data: profilesData } = await supabase
           .from('profiles')
-          .select('id, name, created_at, status, referral_code')
+          .select('id, name, created_at, active_until, referral_code')
           .in('id', userIds);
 
         const profileMap: Record<string, any> = {};
@@ -48,14 +48,25 @@ export default function MinhasIndicacoes() {
 
         const formatted = positions.map((pos: any) => {
           const ref = profileMap[pos.user_id];
+          
+          let computedStatus = 'PENDING';
+          if (ref?.active_until) {
+            const daysLeft = Math.ceil((new Date(ref.active_until).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            if (daysLeft <= 0) {
+              computedStatus = 'INACTIVE';
+            } else {
+              computedStatus = 'ACTIVE';
+            }
+          }
+
           return {
             id: ref?.referral_code || pos.user_id.substring(0, 8),
             name: ref?.name || 'Usuário',
             created_at: ref ? new Date(ref.created_at).toLocaleDateString('pt-BR') : 'N/A',
-            matrix: `#001`, // Simplified for MVP
+            matrix: `#001`,
             level: pos.level,
             position: pos.position_index,
-            status: ref?.status || 'ACTIVE'
+            status: computedStatus
           };
         });
 
@@ -105,8 +116,12 @@ export default function MinhasIndicacoes() {
                     <td className="p-4">{ref.level}</td>
                     <td className="p-4">{ref.position}</td>
                     <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${ref.status === 'ACTIVE' ? 'bg-[#00E89D]/20 text-[#00E89D]' : 'bg-yellow-500/20 text-yellow-500'}`}>
-                        {ref.status === 'ACTIVE' ? 'Ativo' : 'Pendente'}
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        ref.status === 'ACTIVE' ? 'bg-[#00E89D]/20 text-[#00E89D]' : 
+                        ref.status === 'INACTIVE' ? 'bg-red-500/20 text-red-500' : 
+                        'bg-yellow-500/20 text-yellow-500'
+                      }`}>
+                        {ref.status === 'ACTIVE' ? 'Ativo' : ref.status === 'INACTIVE' ? 'Inativo' : 'Pendente'}
                       </span>
                     </td>
                   </tr>
