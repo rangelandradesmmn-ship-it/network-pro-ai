@@ -169,8 +169,12 @@ export default function PainelAdmin() {
           }));
         }
 
-        // Fetch pending payments
-        const { data: pendingData } = await tFilter(supabase.from('financial_ledger').select('created_at, from_user_id, profiles!financial_ledger_from_user_id_fkey(name)').eq('status', 'PENDING'));
+        // Fetch pending payments (Apenas da rede do Admin atual, mesmo se for Super Admin)
+        const { data: pendingData } = await supabase.from('financial_ledger')
+          .select('created_at, from_user_id, profiles!financial_ledger_from_user_id_fkey(name)')
+          .eq('status', 'PENDING')
+          .eq('tenant_id', profile.tenant_id);
+          
         if (pendingData) {
           const uniquePending = Array.from(new Set(pendingData.map((p: any) => p.from_user_id))).map(uid => {
             const row = pendingData.find((p: any) => p.from_user_id === uid);
@@ -179,8 +183,14 @@ export default function PainelAdmin() {
           setPending(uniquePending);
         }
 
-        // Fetch withdrawals
-        const { data: wData } = await tFilter(supabase.from('withdrawals').select('id, amount_miles, created_at, user_id, pix_key, profiles!withdrawals_user_id_fkey(name)').eq('status', 'PENDING').order('created_at', { ascending: false }));
+        // Fetch withdrawals (Apenas da rede do Admin atual)
+        // Como withdrawals não tem tenant_id direto, buscamos os saques onde o user_id pertence ao nosso tenant_id
+        const { data: wData } = await supabase.from('withdrawals')
+          .select('id, amount_miles, created_at, user_id, pix_key, profiles!inner(name, tenant_id)')
+          .eq('status', 'PENDING')
+          .eq('profiles.tenant_id', profile.tenant_id)
+          .order('created_at', { ascending: false });
+          
         if (wData) {
           setWithdrawals(wData.map((w: any) => ({
             id: w.id, user_id: w.user_id, amount_miles: w.amount_miles, pix_key: w.pix_key,
