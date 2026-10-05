@@ -10,7 +10,8 @@ export default function Configuracoes() {
   
   const [tenantSettings, setTenantSettings] = useState({
     company_name: 'NETWORK PRO AI', primary_color: '#00AEEF', secondary_color: '#00E5FF',
-    commission_level_1: 20, commission_level_2: 10, commission_level_3: 20
+    commission_level_1: 20, commission_level_2: 10, commission_level_3: 20,
+    bg_color: '#07111F', panel_color: '#0E1B2B'
   });
   const [savingSettings, setSavingSettings] = useState(false);
 
