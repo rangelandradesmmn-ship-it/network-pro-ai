@@ -119,15 +119,11 @@ export default function Dashboard() {
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-8 flex justify-between items-center shadow-lg shadow-yellow-500/5">
           <div>
             <h2 className="text-yellow-500 font-bold text-lg mb-1">Atenção: Ativação Pendente</h2>
-            <p className="text-[#91A4B7] text-sm">Pague sua taxa de ativação para liberar o seu link de indicação e começar a receber milhas na rede.</p>
+            <p className="text-[#91A4B7] text-sm">A sua entrada na rede está aguardando o reconhecimento do pagamento. Fale com o dono desta rede para ele aprovar a sua conta.</p>
           </div>
-          <button 
-            onClick={handleCheckout}
-            disabled={isProcessing}
-            className="bg-yellow-500 hover:bg-yellow-600 text-[#07111F] font-bold py-3 px-6 rounded-lg transition-colors shadow-[0_0_15px_rgba(234,179,8,0.3)] disabled:opacity-50"
-          >
-            {isProcessing ? 'Redirecionando...' : 'Pagar Ativação (PIX / Cartão)'}
-          </button>
+          <div className="bg-yellow-500/20 text-yellow-500 font-bold py-2 px-4 rounded-lg">
+            Aguardando Admin
+          </div>
         </div>
       )}
 
