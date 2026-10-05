@@ -14,12 +14,14 @@ type Member = {
 export default function MatrixView() {
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState<Member[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
 
   useEffect(() => {
     async function loadNetwork() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+        setCurrentUserId(user.id);
 
         // Fetch user's active matrix
         const { data: matrixData } = await supabase
@@ -57,7 +59,7 @@ export default function MatrixView() {
         // Fetch all positions in this matrix
         const { data: positions, error: posError } = await supabase
           .from('matrix_positions')
-          .select('user_id, position_index, level, is_direct_referral')
+          .select('user_id, position_index, level, is_direct_referral, sponsor_id')
           .eq('matrix_id', matrixData.id)
           .order('position_index', { ascending: true });
 
@@ -88,7 +90,7 @@ export default function MatrixView() {
               level: pos.level,
               position: pos.position_index,
               avatar: userProfile?.avatar_url || `https://i.pravatar.cc/150?u=${pos.position_index}`,
-              isDirect: pos.is_direct_referral
+              isDirect: pos.sponsor_id === user.id
             });
           });
         }
@@ -109,24 +111,33 @@ export default function MatrixView() {
     return members.filter(m => m.position >= startChildPos && m.position <= startChildPos + 4);
   };
 
-  const TreeNode = ({ member }: { member: Member }) => {
+  const TreeNode = ({ member, isRoot = false }: { member: Member, isRoot?: boolean }) => {
     const children = getChildren(member.position);
     
     return (
-      <div className="flex flex-col items-center">
-        <div className={`p-2 m-2 rounded-lg border-2 w-32 flex flex-col items-center shadow-lg transition-transform hover:scale-105 ${member.isDirect ? 'border-[#00AEEF] bg-[#0E1B2B]' : 'border-[#00E89D] bg-[#0E1B2B]'}`}>
+      <div className="flex flex-col items-center relative">
+        <div className={`p-2 m-2 rounded-lg border-2 w-32 flex flex-col items-center shadow-lg transition-transform hover:scale-105 relative z-10 ${member.isDirect ? 'border-[#00AEEF] bg-[#0E1B2B]' : 'border-[#00E89D] bg-[#0E1B2B]'}`}>
           <img src={member.avatar} alt="avatar" className="w-12 h-12 rounded-full mb-2 object-cover" />
           <p className="text-xs text-center font-bold text-white truncate w-full">{member.name}</p>
-          <p className="text-[10px] text-gray-400">Pos: {member.position > 0 ? member.position : 'ROOT'}</p>
+          <p className="text-[10px] text-[#91A4B7]">Pos: {member.position > 0 ? member.position : 'ROOT'}</p>
         </div>
+        
         {children.length > 0 && (
-          <div className="flex flex-row relative mt-4">
-            {children.map(child => (
-              <div key={child.id} className="mx-1 relative">
-                <TreeNode member={child} />
-              </div>
-            ))}
-          </div>
+          <>
+            {/* Linha vertical do pai descendo */}
+            <div className="w-[2px] h-6 bg-[#91A4B7]/40 -mt-2"></div>
+            
+            {/* Container dos filhos com borda superior conectando todos */}
+            <div className="flex flex-row relative pt-4 border-t-2 border-[#91A4B7]/40">
+              {children.map((child, idx) => (
+                <div key={child.id} className="px-2 relative flex flex-col items-center">
+                  {/* Linha vertical subindo de cada filho para conectar na borda superior */}
+                  <div className="w-[2px] h-4 bg-[#91A4B7]/40 absolute top-0"></div>
+                  <TreeNode member={child} />
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     );
@@ -139,15 +150,15 @@ export default function MatrixView() {
   return (
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8 overflow-auto flex flex-col">
       <h1 className="text-2xl font-bold mb-6 text-[#00AEEF]">Árvore da Matriz</h1>
-      <div className="flex items-center gap-4 mb-8 text-sm">
-        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-[#00AEEF]"></div> Indicação Direta</div>
-        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-[#00E89D]"></div> Spillover (Derramamento)</div>
+      <div className="flex items-center gap-4 mb-8 text-sm bg-[#0E1B2B] p-4 rounded-xl border border-[#91A4B7]/20 w-fit">
+        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded border-2 border-[#00AEEF] bg-[#0E1B2B]"></div> Sua Indicação Direta</div>
+        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded border-2 border-[#00E89D] bg-[#0E1B2B]"></div> Spillover (Caiu na sua rede)</div>
       </div>
       
-      <div className="flex-grow overflow-auto p-4 border border-[#91A4B7]/20 rounded-xl bg-[#07111F]/50">
+      <div className="flex-grow overflow-auto p-8 border border-[#91A4B7]/20 rounded-xl bg-[#07111F]/50 flex justify-center items-start">
         {members.length > 0 ? (
-          <div className="inline-flex min-w-max">
-            <TreeNode member={members[0]} />
+          <div className="inline-flex min-w-max pb-16">
+            <TreeNode member={members[0]} isRoot={true} />
           </div>
         ) : (
           <div className="text-[#91A4B7] text-center p-8">Nenhuma rede encontrada. Comece a indicar!</div>
