@@ -37,7 +37,8 @@ export default function Dashboard() {
             }
           } else {
              // Nunca ativado (ou sistema legado)
-             setDaysLeft(0);
+             setDaysLeft(-1); // Força vencido
+             setShowRenewalPopup(true);
           }
         }
 
@@ -109,7 +110,7 @@ export default function Dashboard() {
   const capacity = matrix ? matrix.capacity : 155;
   const percentage = Math.round((totalMembers / capacity) * 100);
 
-  const isExpired = daysLeft !== null && daysLeft < 0;
+  const isExpired = daysLeft !== null && daysLeft <= 0;
 
   return (
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8 relative">
