@@ -26,12 +26,16 @@ export default function PainelAdmin() {
   // Super Admin Tables
   const [tenantsList, setTenantsList] = useState<any[]>([]);
 
-  // Promoção
-  const handlePromoteToAdmin = async (userId: string) => {
-    if (!confirm('Promover este usuário a ADMIN (Dono de Rede)? Ele terá o próprio painel e os indicados dele farão parte da rede dele.')) return;
+  const handlePromoteToAdmin = async (refCode: string) => {
+    if (!confirm(`Promover o dono do código ${refCode} a ADMIN (Empresa)?`)) return;
     try {
-      await supabase.from('profiles').update({ role: 'ADMIN', tenant_id: userId }).eq('id', userId);
-      alert('Usuário promovido com sucesso!');
+      const { data: userToPromote } = await supabase.from('profiles').select('id').eq('referral_code', refCode.trim()).single();
+      if (!userToPromote) {
+        alert('Código de indicação não encontrado!');
+        return;
+      }
+      await supabase.from('profiles').update({ role: 'ADMIN', tenant_id: userToPromote.id }).eq('id', userToPromote.id);
+      alert('Usuário promovido com sucesso! Agora ele tem o próprio Painel Admin.');
       window.location.reload();
     } catch(e) { console.error(e); }
   };
@@ -187,8 +191,8 @@ export default function PainelAdmin() {
           <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
             <h2 className="text-lg font-bold text-purple-400">Suas Empresas Clientes (Admins)</h2>
             <button onClick={() => {
-              const id = prompt('Cole o ID do Usuário que comprou a plataforma para promovê-lo a ADMIN:');
-              if(id) handlePromoteToAdmin(id);
+              const code = prompt('Qual é o Código de Indicação (Ex: NP123456) do usuário que comprou a plataforma?');
+              if(code) handlePromoteToAdmin(code);
             }} className="text-sm bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-700 transition-colors">
               + Nova Empresa
             </button>
