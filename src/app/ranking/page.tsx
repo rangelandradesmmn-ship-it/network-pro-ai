@@ -21,7 +21,7 @@ export default function RankingView() {
           }
         }
 
-        let query = supabase.from('global_ranking').select('*').limit(50);
+        let query = supabase.from('global_ranking').select('*').gt('direct_referrals', 0).limit(50);
         
         // Se não for SUPER_ADMIN, filtra pela rede
         if (!isSuper && myTenantId) {
