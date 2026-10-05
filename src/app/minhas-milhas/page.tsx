@@ -2,18 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabase';
 
-export default function MinhasMilhas() {
+export default function ExtratoMilhas() {
   const [loading, setLoading] = useState(true);
-  const [ledger, setLedger] = useState<any[]>([]);
-  const [totals, setTotals] = useState({
-    saldo: 0,
-    nivel1: 0,
-    nivel2: 0,
-    nivel3: 0
-  });
+  const [extrato, setExtrato] = useState<any[]>([]);
+  const [totalAprovado, setTotalAprovado] = useState(0);
+  const [totalPendente, setTotalPendente] = useState(0);
 
   useEffect(() => {
-    async function loadLedger() {
+    async function loadMilhas() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
@@ -21,124 +17,100 @@ export default function MinhasMilhas() {
         const { data } = await supabase
           .from('financial_ledger')
           .select(`
-            id,
-            created_at,
-            amount_miles,
-            description,
-            level_earned,
-            profiles!financial_ledger_from_user_id_fkey (name),
-            matrices (matrix_number)
+            id, created_at, description, amount_miles, level_earned, status,
+            profiles!financial_ledger_from_user_id_fkey (name, referral_code)
           `)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
         if (data) {
-          let saldo = 0;
-          let n1 = 0;
-          let n2 = 0;
-          let n3 = 0;
+          const formatado = data.map(item => ({
+            id: item.id,
+            date: new Date(item.created_at).toLocaleDateString('pt-BR'),
+            origem: item.profiles?.name || 'Sistema',
+            tipo: item.description,
+            pontos: item.amount_miles,
+            nivel: item.level_earned,
+            status: item.status || 'APPROVED'
+          }));
+          setExtrato(formatado);
 
-          const formatted = data.map((item: any) => {
-            saldo += item.amount_miles;
-            if (item.level_earned === 1) n1 += item.amount_miles;
-            if (item.level_earned === 2) n2 += item.amount_miles;
-            if (item.level_earned === 3) n3 += item.amount_miles;
-
-            return {
-              id: item.id.substring(0, 8),
-              date: new Date(item.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
-              desc: item.description,
-              origin: item.profiles?.name || 'Sistema',
-              matrix: `#${String(item.matrices?.matrix_number || 1).padStart(3, '0')}`,
-              level: item.level_earned,
-              value: item.amount_miles
-            };
-          });
-
-          setTotals({ saldo, nivel1: n1, nivel2: n2, nivel3: n3 });
-          setLedger(formatted);
+          const aprovado = data.filter(i => !i.status || i.status === 'APPROVED').reduce((acc, cur) => acc + cur.amount_miles, 0);
+          const pendente = data.filter(i => i.status === 'PENDING').reduce((acc, cur) => acc + cur.amount_miles, 0);
+          
+          setTotalAprovado(aprovado);
+          setTotalPendente(pendente);
         }
       } catch (error) {
-        console.error("Erro ao carregar extrato:", error);
+        console.error("Erro ao carregar milhas", error);
       } finally {
         setLoading(false);
       }
     }
-    loadLedger();
+    loadMilhas();
   }, []);
 
   return (
     <div className="min-h-screen bg-[#07111F] text-[#F4F7FA] p-8">
-      <h1 className="text-2xl font-bold mb-6 text-[#00AEEF]">Minhas Milhas</h1>
+      <h1 className="text-2xl font-bold mb-8 text-[#00AEEF]">Minhas Milhas</h1>
       
-      {/* Cards Superiores */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-[#0E1B2B] p-6 rounded-xl border border-[#91A4B7]/20">
-          <p className="text-[#91A4B7] text-sm">Saldo Atual</p>
-          <p className="text-3xl font-bold text-[#00E89D]">{totals.saldo.toLocaleString('pt-BR')}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#00E89D]/30 shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#00E89D]/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+          <p className="text-[#91A4B7] mb-2 font-medium">Milhas Aprovadas (Disponíveis)</p>
+          <p className="text-5xl font-black text-[#00E89D]">{totalAprovado}</p>
         </div>
-        <div className="bg-[#0E1B2B] p-6 rounded-xl border border-[#91A4B7]/20">
-          <p className="text-[#91A4B7] text-sm">Nível 1 (20/pos)</p>
-          <p className="text-2xl font-bold">{totals.nivel1} <span className="text-sm font-normal text-gray-500">/ 100</span></p>
-        </div>
-        <div className="bg-[#0E1B2B] p-6 rounded-xl border border-[#91A4B7]/20">
-          <p className="text-[#91A4B7] text-sm">Nível 2 (10/pos)</p>
-          <p className="text-2xl font-bold">{totals.nivel2} <span className="text-sm font-normal text-gray-500">/ 250</span></p>
-        </div>
-        <div className="bg-[#0E1B2B] p-6 rounded-xl border border-[#91A4B7]/20">
-          <p className="text-[#91A4B7] text-sm">Nível 3 (20/pos)</p>
-          <p className="text-2xl font-bold">{totals.nivel3} <span className="text-sm font-normal text-gray-500">/ 2500</span></p>
+        <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-yellow-500/30 shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+          <p className="text-[#91A4B7] mb-2 font-medium">Milhas Pendentes (Aguardando Pgto)</p>
+          <p className="text-5xl font-black text-yellow-500">{totalPendente}</p>
         </div>
       </div>
 
-      {/* Extrato */}
       <div className="bg-[#0E1B2B] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
-        <div className="p-4 border-b border-[#91A4B7]/20 flex justify-between items-center bg-[#07111F]/50">
-          <h2 className="font-semibold text-lg">Extrato (Ledger)</h2>
-          <select className="bg-[#07111F] border border-[#91A4B7]/30 text-white rounded p-2 text-sm">
-            <option>Últimos 30 dias</option>
-            <option>Este Mês</option>
-            <option>Mês Passado</option>
-          </select>
+        <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
+          <h2 className="text-lg font-bold">Extrato Detalhado</h2>
         </div>
-        
-        {loading ? (
-          <div className="p-8 text-center text-[#00AEEF]">Carregando extrato...</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm">
+        <div className="overflow-x-auto">
+          {loading ? (
+            <div className="p-8 text-center text-[#00AEEF]">Carregando extrato...</div>
+          ) : (
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#00AEEF]/5 border-b border-[#91A4B7]/20">
-                  <th className="p-4 text-[#00E5FF]">Data/Hora</th>
-                  <th className="p-4 text-[#00E5FF]">ID Transação</th>
-                  <th className="p-4 text-[#00E5FF]">Descrição</th>
-                  <th className="p-4 text-[#00E5FF]">Origem</th>
-                  <th className="p-4 text-[#00E5FF]">Matriz</th>
-                  <th className="p-4 text-[#00E5FF]">Nível</th>
-                  <th className="p-4 text-right text-[#00E5FF]">Valor</th>
+                <tr className="bg-[#07111F]/50 border-b border-[#91A4B7]/20 text-sm">
+                  <th className="p-4 font-bold text-[#91A4B7]">Data</th>
+                  <th className="p-4 font-bold text-[#91A4B7]">Origem</th>
+                  <th className="p-4 font-bold text-[#91A4B7]">Tipo</th>
+                  <th className="p-4 font-bold text-[#91A4B7]">Nível</th>
+                  <th className="p-4 font-bold text-[#91A4B7]">Status</th>
+                  <th className="p-4 font-bold text-[#91A4B7] text-right">Pontos</th>
                 </tr>
               </thead>
               <tbody>
-                {ledger.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="p-8 text-center text-[#91A4B7]">Nenhuma movimentação de milhas encontrada.</td>
-                  </tr>
-                )}
-                {ledger.map((trx, idx) => (
-                  <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50">
-                    <td className="p-4 text-[#91A4B7]">{trx.date}</td>
-                    <td className="p-4 font-mono text-[#91A4B7] text-xs">TRX-{trx.id}</td>
-                    <td className="p-4">{trx.desc}</td>
-                    <td className="p-4">{trx.origin}</td>
-                    <td className="p-4 text-[#00AEEF]">{trx.matrix}</td>
-                    <td className="p-4">{trx.level}</td>
-                    <td className="p-4 text-right font-bold text-[#00E89D]">+{trx.value}</td>
+                {extrato.length === 0 ? (
+                  <tr><td colSpan={6} className="p-8 text-center text-[#91A4B7]">Nenhuma milha recebida ainda.</td></tr>
+                ) : extrato.map((item) => (
+                  <tr key={item.id} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 transition-colors">
+                    <td className="p-4 text-sm text-[#91A4B7]">{item.date}</td>
+                    <td className="p-4 font-medium">{item.origem}</td>
+                    <td className="p-4 text-sm">{item.tipo}</td>
+                    <td className="p-4 text-sm text-[#91A4B7]">{item.nivel}</td>
+                    <td className="p-4 text-sm font-bold">
+                      {item.status === 'APPROVED' ? (
+                        <span className="text-[#00E89D] bg-[#00E89D]/10 px-2 py-1 rounded">Aprovado</span>
+                      ) : (
+                        <span className="text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded">Pendente</span>
+                      )}
+                    </td>
+                    <td className={`p-4 font-bold text-right ${item.status === 'APPROVED' ? 'text-[#00E89D]' : 'text-yellow-500'}`}>
+                      +{item.pontos}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

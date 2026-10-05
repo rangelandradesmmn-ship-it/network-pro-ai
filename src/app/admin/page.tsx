@@ -12,7 +12,23 @@ export default function PainelAdmin() {
     usersToday: 0
   });
   const [audit, setAudit] = useState<any[]>([]);
+  const [pending, setPending] = useState<any[]>([]);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+
+  const handleApprove = async (fromUserId: string) => {
+    try {
+      const { error } = await supabase
+        .from('financial_ledger')
+        .update({ status: 'APPROVED' })
+        .eq('from_user_id', fromUserId);
+      if (!error) {
+        setPending(prev => prev.filter(p => p.from_user_id !== fromUserId));
+        alert('Pagamento aprovado e comissões distribuídas na rede!');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     async function loadAdminData() {
@@ -74,6 +90,25 @@ export default function PainelAdmin() {
           setAudit(formattedAudit);
         }
 
+        // Fetch pending payments
+        const { data: pendingData } = await supabase
+          .from('financial_ledger')
+          .select('created_at, from_user_id, profiles!financial_ledger_from_user_id_fkey(name)')
+          .eq('status', 'PENDING');
+          
+        if (pendingData) {
+          // Group by from_user_id
+          const uniquePending = Array.from(new Set(pendingData.map(p => p.from_user_id))).map(uid => {
+            const row = pendingData.find(p => p.from_user_id === uid);
+            return {
+              from_user_id: uid,
+              date: new Date(row!.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
+              payerName: (row?.profiles as any)?.name || 'Usuário'
+            };
+          });
+          setPending(uniquePending);
+        }
+
       } catch (error) {
         console.error("Erro ao carregar admin", error);
       } finally {
@@ -117,6 +152,44 @@ export default function PainelAdmin() {
             <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg flex flex-col justify-center">
               <p className="text-sm text-[#91A4B7] mb-2 font-bold">Milhas Distribuídas</p>
               <p className="text-3xl font-bold text-[#00E89D]">{stats.totalMiles.toLocaleString('pt-BR')}</p>
+            </div>
+          </div>
+
+          <div className="bg-[#0E1B2B] rounded-2xl border border-red-500/20 shadow-lg overflow-hidden mb-8">
+            <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
+              <h2 className="text-lg font-bold text-yellow-500">Pagamentos Pendentes (Ativações)</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-yellow-500/5 border-b border-[#91A4B7]/20 text-sm">
+                    <th className="p-4 font-bold text-yellow-500">Data</th>
+                    <th className="p-4 font-bold text-yellow-500">Usuário Pagador</th>
+                    <th className="p-4 font-bold text-yellow-500">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pending.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="p-8 text-center text-[#91A4B7]">Nenhuma ativação pendente.</td>
+                    </tr>
+                  )}
+                  {pending.map((item, idx) => (
+                    <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 text-sm">
+                      <td className="p-4 text-[#91A4B7]">{item.date}</td>
+                      <td className="p-4 font-bold text-white">{item.payerName}</td>
+                      <td className="p-4">
+                        <button 
+                          onClick={() => handleApprove(item.from_user_id)}
+                          className="bg-green-500 text-white px-4 py-1 rounded font-bold hover:bg-green-600 transition-colors"
+                        >
+                          Aprovar Matriz
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
