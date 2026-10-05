@@ -43,16 +43,23 @@ export default function Configuracoes() {
   async function handleSaveTenantSettings() {
     setSavingSettings(true);
     try {
-      const { error } = await supabase.from('tenant_settings').upsert({
+      const payload = {
         tenant_id: profile.id,
-        ...tenantSettings,
-        updated_at: new Date()
-      });
+        company_name: tenantSettings.company_name,
+        primary_color: tenantSettings.primary_color,
+        secondary_color: tenantSettings.secondary_color,
+        commission_level_1: Number(tenantSettings.commission_level_1),
+        commission_level_2: Number(tenantSettings.commission_level_2),
+        commission_level_3: Number(tenantSettings.commission_level_3),
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error } = await supabase.from('tenant_settings').upsert(payload);
       if (error) throw error;
       alert('Configurações salvas com sucesso! Para ver a mudança das cores, recarregue a página.');
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert('Erro ao salvar as configurações.');
+      alert('Erro ao salvar as configurações: ' + (e.message || JSON.stringify(e)));
     } finally {
       setSavingSettings(false);
     }
