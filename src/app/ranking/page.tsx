@@ -9,10 +9,26 @@ export default function RankingView() {
   useEffect(() => {
     async function loadRanking() {
       try {
-        const { data } = await supabase
-          .from('global_ranking')
-          .select('*')
-          .limit(50); // Get top 50
+        const { data: { user } } = await supabase.auth.getUser();
+        let myTenantId = null;
+        let isSuper = false;
+
+        if (user) {
+          const { data: profile } = await supabase.from('profiles').select('tenant_id, role').eq('id', user.id).single();
+          if (profile) {
+            myTenantId = profile.tenant_id;
+            isSuper = profile.role === 'SUPER_ADMIN';
+          }
+        }
+
+        let query = supabase.from('global_ranking').select('*').limit(50);
+        
+        // Se não for SUPER_ADMIN, filtra pela rede
+        if (!isSuper && myTenantId) {
+          query = query.eq('tenant_id', myTenantId);
+        }
+
+        const { data } = await query;
 
         if (data) {
           setRanking(data);
