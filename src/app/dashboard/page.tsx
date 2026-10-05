@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [matrix, setMatrix] = useState<any>(null);
   const [needsActivation, setNeedsActivation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -25,6 +26,15 @@ export default function Dashboard() {
         if (profileData) {
           setProfile({ ...profileData, total_miles: realMiles });
         }
+
+        // Buscar ultimas movimentacoes
+        const { data: activityData } = await supabase
+          .from('financial_ledger')
+          .select('id, created_at, description, amount_miles, status')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        if (activityData) setRecentActivity(activityData);
 
         // Check if user has PENDING ledger entries as payer
         const { count: pendingCount } = await supabase
@@ -191,6 +201,47 @@ export default function Dashboard() {
           <div className="flex justify-between text-xs text-[#91A4B7]">
             <span className="w-full text-center">Níveis em preenchimento inteligente</span>
           </div>
+        </div>
+      </div>
+
+      <div className="bg-[#0E1B2B] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
+        <div className="p-6 border-b border-[#91A4B7]/20">
+          <h2 className="text-lg font-bold text-white">Últimas Movimentações</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#07111F]/50 border-b border-[#91A4B7]/20 text-sm">
+                <th className="p-4 font-bold text-[#91A4B7]">Data</th>
+                <th className="p-4 font-bold text-[#91A4B7]">Tipo</th>
+                <th className="p-4 font-bold text-[#91A4B7]">Status</th>
+                <th className="p-4 font-bold text-[#91A4B7] text-right">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentActivity.length === 0 ? (
+                <tr><td colSpan={4} className="p-8 text-center text-[#91A4B7]">Nenhuma movimentação recente.</td></tr>
+              ) : recentActivity.map((item, idx) => {
+                const isAprovado = !item.status || item.status === 'APPROVED';
+                return (
+                  <tr key={idx} className="border-b border-[#91A4B7]/10 hover:bg-[#07111F]/50 transition-colors">
+                    <td className="p-4 text-sm text-[#91A4B7]">{new Date(item.created_at).toLocaleDateString('pt-BR')}</td>
+                    <td className="p-4 text-sm font-medium">{item.description}</td>
+                    <td className="p-4 text-sm font-bold">
+                      {isAprovado ? (
+                        <span className="text-[#00E89D] bg-[#00E89D]/10 px-2 py-1 rounded">Aprovado</span>
+                      ) : (
+                        <span className="text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded">Pendente</span>
+                      )}
+                    </td>
+                    <td className={`p-4 font-bold text-right ${item.amount_miles > 0 ? (isAprovado ? 'text-[#00E89D]' : 'text-yellow-500') : 'text-red-500'}`}>
+                      {item.amount_miles > 0 ? '+' : ''}{item.amount_miles} Milhas
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
