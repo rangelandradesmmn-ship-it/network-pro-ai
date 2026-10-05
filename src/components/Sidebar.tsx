@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -29,6 +29,21 @@ export default function Sidebar() {
     router.push('/login');
   };
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    async function checkAdmin() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        if (profile?.role === 'ADMIN') {
+          setIsAdmin(true);
+        }
+      }
+    }
+    checkAdmin();
+  }, []);
+
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Minhas Matrizes', path: '/matrizes', icon: <Layers size={20} /> },
@@ -36,7 +51,7 @@ export default function Sidebar() {
     { name: 'Minhas Indicações', path: '/minhas-indicacoes', icon: <Users size={20} /> },
     { name: 'Minhas Milhas', path: '/minhas-milhas', icon: <Star size={20} /> },
     { name: 'Ranking', path: '/ranking', icon: <Trophy size={20} /> },
-    { name: 'Painel Admin', path: '/admin', icon: <Lock size={20} /> },
+    ...(isAdmin ? [{ name: 'Painel Admin', path: '/admin', icon: <Lock size={20} /> }] : []),
   ];
 
   return (

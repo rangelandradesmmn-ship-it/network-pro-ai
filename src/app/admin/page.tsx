@@ -12,12 +12,22 @@ export default function PainelAdmin() {
     usersToday: 0
   });
   const [audit, setAudit] = useState<any[]>([]);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
 
   useEffect(() => {
     async function loadAdminData() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+
+        // Check if user is ADMIN
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        if (profile?.role !== 'ADMIN') {
+          setHasAccess(false);
+          setLoading(false);
+          return;
+        }
+        setHasAccess(true);
 
         // Fetch Total Users
         const { count: totalUsers } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
@@ -80,6 +90,11 @@ export default function PainelAdmin() {
       
       {loading ? (
         <div className="text-red-500 py-8 text-center">Carregando métricas da plataforma...</div>
+      ) : hasAccess === false ? (
+        <div className="bg-[#0E1B2B] p-8 rounded-2xl border border-red-500/20 shadow-lg text-center">
+          <h2 className="text-2xl font-bold text-red-500 mb-2">Acesso Negado</h2>
+          <p className="text-[#91A4B7]">Você não tem permissão para visualizar o Painel Admin.</p>
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
