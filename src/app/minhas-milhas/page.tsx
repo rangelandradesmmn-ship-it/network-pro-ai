@@ -14,6 +14,7 @@ export default function ExtratoMilhas() {
   const [pixKey, setPixKey] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [isActive, setIsActive] = useState(true);
 
   async function loadMilhas() {
     try {
@@ -21,10 +22,21 @@ export default function ExtratoMilhas() {
       if (!user) return;
       setUserId(user.id);
 
-      const { data: profile } = await supabase.from('profiles').select('tenant_id, pix_key').eq('id', user.id).single();
+      const { data: profile } = await supabase.from('profiles').select('tenant_id, pix_key, active_until, role').eq('id', user.id).single();
       if (profile) {
         setTenantId(profile.tenant_id);
         if (profile.pix_key) setPixKey(profile.pix_key);
+        
+        // Verifica se usuário está ativo
+        if (profile.role === 'USER') {
+          if (!profile.active_until || new Date(profile.active_until).getTime() < new Date().getTime()) {
+            setIsActive(false);
+          } else {
+            setIsActive(true);
+          }
+        } else {
+          setIsActive(true); // Admin e Super Admin sempre ativos
+        }
       }
 
       const { data } = await supabase
@@ -132,12 +144,25 @@ export default function ExtratoMilhas() {
       <div className="bg-[var(--panel-color)] rounded-2xl border border-[#91A4B7]/20 shadow-lg overflow-hidden">
         <div className="p-6 border-b border-[#91A4B7]/20 flex justify-between items-center">
           <h2 className="text-lg font-bold">Extrato Detalhado</h2>
-          <button 
-            onClick={() => setShowModal(true)}
-            className="text-sm bg-[var(--primary-color)] text-white px-4 py-2 rounded font-bold hover:bg-[#0091C7] transition-colors shadow-[0_0_15px_rgba(0,174,239,0.4)]"
-          >
-            Resgatar Milhas
-          </button>
+          <div className="relative group">
+            <button 
+              onClick={() => {
+                if (!isActive) {
+                  alert('Você precisa estar Ativo para solicitar resgates! Vá ao seu Dashboard e pague a sua ativação.');
+                  return;
+                }
+                setShowModal(true);
+              }}
+              className={`text-sm px-4 py-2 rounded font-bold transition-colors shadow-lg ${isActive ? 'bg-[var(--primary-color)] text-white hover:bg-[#0091C7]' : 'bg-gray-600 text-gray-300 cursor-not-allowed opacity-80'}`}
+            >
+              Resgatar Milhas
+            </button>
+            {!isActive && (
+              <div className="absolute top-full right-0 mt-2 w-48 p-2 bg-yellow-500 text-black text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                Você precisa estar Ativo para solicitar o saque.
+              </div>
+            )}
+          </div>
         </div>
         <div className="overflow-x-auto">
           {loading ? (
