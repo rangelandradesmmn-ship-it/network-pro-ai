@@ -13,14 +13,21 @@ export default function MinhasMatrizes() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data } = await supabase
-          .from('matrices')
-          .select('*')
-          .eq('owner_user_id', user.id)
-          .order('matrix_number', { ascending: false });
+        // Verifica se é admin
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
 
-        if (data) {
-          setMatrizes(data);
+        if (profile?.role === 'SUPER_ADMIN' || profile?.role === 'ADMIN') {
+          // Admins veem a matriz real da empresa
+          const { data } = await supabase
+            .from('matrices')
+            .select('*')
+            .eq('owner_user_id', user.id)
+            .order('matrix_number', { ascending: false });
+          if (data) setMatrizes(data);
+        } else {
+          // Usuários comuns veem o próprio progresso na downline calculada pelo RPC
+          const { data, error } = await supabase.rpc('get_user_matrices_progress', { p_user_id: user.id });
+          if (data) setMatrizes(data);
         }
       } catch (error) {
         console.error("Erro ao carregar matrizes:", error);

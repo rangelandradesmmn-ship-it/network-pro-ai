@@ -48,16 +48,18 @@ export default function Dashboard() {
         }
 
         // Buscar matriz ativa
-        const { data: matrixData } = await supabase
-          .from('matrices')
-          .select('*')
-          .eq('owner_user_id', user.id)
-          .order('matrix_number', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (matrixData) {
-          setMatrix(matrixData);
+        if (profileData?.role === 'SUPER_ADMIN' || profileData?.role === 'ADMIN') {
+          const { data: matrixData } = await supabase
+            .from('matrices')
+            .select('*')
+            .eq('owner_user_id', user.id)
+            .order('matrix_number', { ascending: false })
+            .limit(1)
+            .single();
+          if (matrixData) setMatrix(matrixData);
+        } else {
+          const { data: matrixData } = await supabase.rpc('get_user_matrices_progress', { p_user_id: user.id });
+          if (matrixData && matrixData.length > 0) setMatrix(matrixData[0]);
         }
       } catch (error) {
         console.error("Erro ao carregar dados", error);
