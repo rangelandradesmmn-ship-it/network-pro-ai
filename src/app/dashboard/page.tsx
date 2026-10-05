@@ -8,6 +8,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [matrix, setMatrix] = useState<any>(null);
+  const [needsActivation, setNeedsActivation] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -24,6 +26,17 @@ export default function Dashboard() {
 
         if (profileData) {
           setProfile(profileData);
+        }
+
+        // Check if user has PENDING ledger entries as payer
+        const { count: pendingCount } = await supabase
+          .from('financial_ledger')
+          .select('*', { count: 'exact', head: true })
+          .eq('from_user_id', user.id)
+          .eq('status', 'PENDING');
+          
+        if (pendingCount && pendingCount > 0) {
+          setNeedsActivation(true);
         }
 
         // Buscar matriz ativa
@@ -47,6 +60,32 @@ export default function Dashboard() {
     loadData();
   }, []);
 
+  const handleCheckout = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: profile?.id,
+          userEmail: profile?.email,
+          userName: profile?.name,
+          tenantId: profile?.tenant_id
+        }),
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Erro ao iniciar pagamento: ' + data.error);
+        setIsProcessing(false);
+      }
+    } catch (e) {
+      console.error(e);
+      setIsProcessing(false);
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen bg-[#07111F] text-[#00AEEF] flex justify-center items-center">Carregando dados reais...</div>;
   }
@@ -68,11 +107,29 @@ export default function Dashboard() {
         <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="text-sm text-[#91A4B7]">ID: {profile?.referral_code || '---'}</p>
-            <p className="font-bold text-[#00E89D]">Status: {profile?.status || 'Ativo'}</p>
+            <p className={`font-bold ${needsActivation ? 'text-yellow-500' : 'text-[#00E89D]'}`}>
+              Status: {needsActivation ? 'Pendente' : (profile?.status || 'Ativo')}
+            </p>
           </div>
           <img src={profile?.avatar_url || "https://i.pravatar.cc/150?u=admin"} alt="Perfil" className="w-12 h-12 rounded-full border-2 border-[#00AEEF]" />
         </div>
       </header>
+
+      {needsActivation && (
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-8 flex justify-between items-center shadow-lg shadow-yellow-500/5">
+          <div>
+            <h2 className="text-yellow-500 font-bold text-lg mb-1">Atenção: Ativação Pendente</h2>
+            <p className="text-[#91A4B7] text-sm">Pague sua taxa de ativação para liberar o seu link de indicação e começar a receber milhas na rede.</p>
+          </div>
+          <button 
+            onClick={handleCheckout}
+            disabled={isProcessing}
+            className="bg-yellow-500 hover:bg-yellow-600 text-[#07111F] font-bold py-3 px-6 rounded-lg transition-colors shadow-[0_0_15px_rgba(234,179,8,0.3)] disabled:opacity-50"
+          >
+            {isProcessing ? 'Redirecionando...' : 'Pagar Ativação (PIX / Cartão)'}
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-[#0E1B2B] p-6 rounded-2xl border border-[#91A4B7]/20 shadow-lg">
@@ -86,20 +143,28 @@ export default function Dashboard() {
             <>
               <div>
                 <h3 className="text-[#91A4B7] mb-2 font-semibold">Seu Link de Indicação</h3>
-                <p className="text-lg font-mono text-[#00AEEF] bg-[#07111F] p-2 rounded-lg truncate">
-                  {referralLink || 'Link indisponível'}
-                </p>
+                {needsActivation ? (
+                  <p className="text-sm text-yellow-500 bg-yellow-500/10 p-2 rounded-lg mt-2">
+                    Link bloqueado. Pague a ativação acima para liberar.
+                  </p>
+                ) : (
+                  <p className="text-lg font-mono text-[#00AEEF] bg-[#07111F] p-2 rounded-lg truncate mt-2">
+                    {referralLink || 'Link indisponível'}
+                  </p>
+                )}
               </div>
               <div className="flex gap-2 mt-4">
                 <button 
                   onClick={() => navigator.clipboard.writeText(referralLink)}
-                  className="flex-1 bg-[#00AEEF] hover:bg-[#00E5FF] text-[#07111F] font-bold py-2 rounded-lg transition-colors"
+                  disabled={needsActivation}
+                  className="flex-1 bg-[#00AEEF] hover:bg-[#00E5FF] text-[#07111F] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Copiar
                 </button>
                 <button 
                   onClick={() => setShowQR(true)}
-                  className="flex-1 bg-[#0E1B2B] border border-[#00AEEF] hover:bg-[#00AEEF]/20 text-[#00AEEF] font-bold py-2 rounded-lg transition-colors"
+                  disabled={needsActivation}
+                  className="flex-1 bg-[#0E1B2B] border border-[#00AEEF] hover:bg-[#00AEEF]/20 text-[#00AEEF] font-bold py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   QR Code
                 </button>
