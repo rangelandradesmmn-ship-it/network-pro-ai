@@ -27,7 +27,7 @@ export default function ExtratoMilhas() {
           const formatado = data.map(item => ({
             id: item.id,
             date: new Date(item.created_at).toLocaleDateString('pt-BR'),
-            origem: item.profiles?.name || 'Sistema',
+            origem: (item.profiles as any)?.name || 'Sistema',
             tipo: item.description,
             pontos: item.amount_miles,
             nivel: item.level_earned,
