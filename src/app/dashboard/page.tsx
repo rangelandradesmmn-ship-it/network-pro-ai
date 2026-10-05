@@ -17,15 +17,13 @@ export default function Dashboard() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Buscar perfil
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+        // Buscar perfil e calcular milhas reais
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        const { data: milesData } = await supabase.from('financial_ledger').select('amount_miles').eq('user_id', user.id).eq('status', 'APPROVED');
+        const realMiles = milesData ? milesData.reduce((acc, curr) => acc + curr.amount_miles, 0) : 0;
 
         if (profileData) {
-          setProfile(profileData);
+          setProfile({ ...profileData, total_miles: realMiles });
         }
 
         // Check if user has PENDING ledger entries as payer
