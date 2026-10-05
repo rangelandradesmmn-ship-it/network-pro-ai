@@ -31,14 +31,18 @@ export async function POST(request: Request) {
       ruleVersionId = rules[0].id;
     }
 
-    // Get Sponsor ID if not ROOT
+    // Get Sponsor ID and Tenant ID if not ROOT
     let sponsorId = null;
+    let tenantId = null;
+    
     if (sponsorCode.toUpperCase() !== 'ROOT') {
-      const { data: sponsor, error: sponsorError } = await supabase.from('profiles').select('id').eq('referral_code', sponsorCode).single();
+      const { data: sponsor, error: sponsorError } = await supabase.from('profiles').select('id, tenant_id').eq('referral_code', sponsorCode).single();
       if (sponsorError || !sponsor) {
         return NextResponse.json({ error: 'Código do patrocinador não encontrado.' }, { status: 404 });
       }
       sponsorId = sponsor.id;
+      // Herdamos o tenant_id do patrocinador. Se por acaso estiver vazio (migração), ele pode ser o próprio patrocinador
+      tenantId = sponsor.tenant_id || sponsor.id;
     }
 
     // 2. Create Profile
@@ -49,8 +53,9 @@ export async function POST(request: Request) {
       email: email || '',
       phone: phone || '',
       referral_code: refCode,
-      role: sponsorCode.toUpperCase() === 'ROOT' ? 'ADMIN' : 'USER',
-      sponsor_id: sponsorId
+      role: sponsorCode.toUpperCase() === 'ROOT' ? 'SUPER_ADMIN' : 'USER',
+      sponsor_id: sponsorId,
+      tenant_id: tenantId || newUserId // ROOT herda de si mesmo
     }]);
 
     if (profileError) {
@@ -64,7 +69,8 @@ export async function POST(request: Request) {
          owner_user_id: newUserId, 
          matrix_number: 1, 
          capacity: 155, 
-         rule_version_id: ruleVersionId 
+         rule_version_id: ruleVersionId,
+         tenant_id: newUserId // ROOT owns his matrices
        }]);
        
        if (matrixError) {
@@ -81,7 +87,8 @@ export async function POST(request: Request) {
     // Run the RPC for Spillover placement
     const { data, error } = await supabase.rpc('place_user_in_matrix', { 
       p_sponsor_id: sponsorId, 
-      p_new_user_id: newUserId 
+      p_new_user_id: newUserId,
+      p_tenant_id: tenantId
     });
     
     if (error) {
