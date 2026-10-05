@@ -36,17 +36,25 @@ export default function Dashboard() {
             }
           }
           
-          if (profileData.active_until) {
-            const diffTime = new Date(profileData.active_until).getTime() - new Date().getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            setDaysLeft(diffDays);
-            if (diffDays <= 3) {
-              setShowRenewalPopup(true);
+          const isCommonUser = profileData.role === 'USER';
+          
+          if (isCommonUser) {
+            if (profileData.active_until) {
+              const diffTime = new Date(profileData.active_until).getTime() - new Date().getTime();
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              setDaysLeft(diffDays);
+              if (diffDays <= 3) {
+                setShowRenewalPopup(true);
+              }
+            } else {
+               // Nunca ativado (ou sistema legado)
+               setDaysLeft(-1); // Força vencido
+               setShowRenewalPopup(true);
             }
           } else {
-             // Nunca ativado (ou sistema legado)
-             setDaysLeft(-1); // Força vencido
-             setShowRenewalPopup(true);
+            // Admins e Super Admins não pagam a mensalidade de rede
+            setDaysLeft(null);
+            setShowRenewalPopup(false);
           }
         }
 
@@ -132,11 +140,18 @@ export default function Dashboard() {
         <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="text-sm text-[#91A4B7]">ID: {profile?.referral_code || '---'}</p>
-            <p className={`font-bold ${needsActivation || isExpired ? 'text-yellow-500' : 'text-[#00E89D]'}`}>
-              Status: {needsActivation ? 'Pendente' : (isExpired ? 'Inativo (Vencido)' : 'Ativo')}
-            </p>
-            {profile?.active_until && (
-              <p className="text-[10px] text-[#91A4B7]">Vence: {new Date(profile.active_until).toLocaleDateString('pt-BR')}</p>
+            {profile?.role === 'USER' && (
+              <>
+                <p className={`font-bold ${needsActivation || isExpired ? 'text-yellow-500' : 'text-[#00E89D]'}`}>
+                  Status: {needsActivation ? 'Pendente' : (isExpired ? 'Inativo (Vencido)' : 'Ativo')}
+                </p>
+                {profile?.active_until && (
+                  <p className="text-[10px] text-[#91A4B7]">Vence: {new Date(profile.active_until).toLocaleDateString('pt-BR')}</p>
+                )}
+              </>
+            )}
+            {profile?.role !== 'USER' && (
+              <p className="font-bold text-purple-400">Admin (Empresa)</p>
             )}
           </div>
           <img src={profile?.avatar_url || "https://i.pravatar.cc/150?u=admin"} alt="Perfil" className="w-12 h-12 rounded-full border-2 border-[var(--primary-color)]" />
